@@ -110,7 +110,7 @@ public class Pawn : ChessPiece
 			}
 
 			//en passant move left 
-			if (PositionY == 4)
+			if (PositionY == 4 && PositionX < 7)
 			{
 				if (isEnPassantEnabledLeft)
 				{

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 //base class for a piece
 public abstract class ChessPiece : MonoBehaviour
 {

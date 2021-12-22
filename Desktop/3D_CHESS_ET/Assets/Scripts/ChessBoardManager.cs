@@ -23,9 +23,11 @@ public class ChessBoardManager : MonoBehaviour
 
 	public bool isCheck = false;
 	public bool figureUnableToProtect = false;
-	public ChessPiece checkingPiece; 
+	public ChessPiece checkingPiece;
 
-	private SpecialMoves specialMoves;
+	public King king;
+
+
 
 	#endregion
 	#region serialized_fields
@@ -45,7 +47,6 @@ public class ChessBoardManager : MonoBehaviour
 	private bool [,] currentlyPossibleMoves = new bool[8, 8];
 	private bool [,] tempPossibleMoves = new bool[8, 8];
 	private bool [,] allowedForCheck;
-	private bool[,] add { get; set; }
 
 
 	public List<GameObject> chessPiecesPrefabs;
@@ -57,7 +58,6 @@ public class ChessBoardManager : MonoBehaviour
 	{
 		Instance = this;
 		SpawnAllChessPieces();
-
 	}
 
 	private void Update()
@@ -71,18 +71,15 @@ public class ChessBoardManager : MonoBehaviour
 			Debug.Log(locationX);
 			Debug.Log(locationY);
 			MapPositionToChessPosition(locationX,locationY);
-
 		
 			if(locationX >= 0 && locationY >= 0)
 			{
 				if(selectedPiece == null)
 				{
-					//select piece
 					SelectChessPiece(locationX, locationY);
 				}
 				else
 				{
-					//move already selected piece
 					MoveChessPiece(locationX, locationY);
 				}
 			}
@@ -108,9 +105,9 @@ public class ChessBoardManager : MonoBehaviour
 			Tuple<int, int> key = new Tuple<int, int>(x, y);
 			allPossibleMovesForCheck.TryGetValue(key, out allowedForCheck);
 			allowedMoves = allowedForCheck;
-
-			// additional check for king in a check state for forbidden moves
-
+			var kingObject = gameObject.GetComponent<King>();
+			var filtered  = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
+			allowedMoves = filtered;
 		}
 		else
 		{
@@ -319,7 +316,6 @@ public class ChessBoardManager : MonoBehaviour
 		selectedPiece = null;
 		if(isCheck)
 		{
-			//HandleCheck.Instance.HandleKingCheck(isCheck);
 			int savedX = 0;
 			int savedY = 0;
 			bool handle = false;
@@ -336,6 +332,7 @@ public class ChessBoardManager : MonoBehaviour
 							{
 								savedX = checkPiece.PositionX; //Simulate the position
 								savedY = checkPiece.PositionY; //...
+								ChessPiece saved = Pieces[i, j];
 								Pieces[i, j] = checkPiece; //...
 								checkPiece.SetPosition(i, j);
 								Pieces[savedX, savedY] = null; //...
@@ -388,8 +385,9 @@ public class ChessBoardManager : MonoBehaviour
 									handle = true;
 								}
 
-								Pieces[i, j] = null;
+								Pieces[i, j] = saved;
 								Pieces[savedX, savedY] = checkPiece;
+								checkPiece.SetPosition(savedX, savedY);//
 								figureUnableToProtect = false;
 								Array.Clear(currentlyPossibleMoves, 0, currentlyPossibleMoves.Length);
 
@@ -433,9 +431,17 @@ public class ChessBoardManager : MonoBehaviour
 				}
 			}
 
-			if(isCheck && allPossibleMovesForCheck.Count == 0)
+			var kingObject = gameObject.GetComponent<King>();
+			//checkmate check
+			if (isCheck && 
+				((allPossibleMovesForCheck.Count == 1 && allPossibleMovesForCheck.ContainsKey(kingObject.GetKingPosition())) || (allPossibleMovesForCheck.Count == 0)))
 			{
-				Debug.Log("GAME OVER - CHECKMATE" + isWhiteTurn + "wins");
+				//game over conditions - check, king cannot move anywhere and no piece to protect
+				if(!kingObject.SimulateKingMove())
+				{
+					Debug.Log("GAME OVER - CHECKMATE" + !isWhiteTurn + "wins");
+
+				}
 			}
 		}
 	}

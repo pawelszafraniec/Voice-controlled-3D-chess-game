@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,11 +21,11 @@ public class King : ChessPiece
 		//top
 		i = PositionX - 1;
 		j = PositionY + 1;
-		if(PositionY != 7)
+		if (PositionY != 7)
 		{
-			for(int k = 0; k <3; k++)
+			for (int k = 0; k < 3; k++)
 			{
-				if(i>=0 && i<8)
+				if (i >= 0 && i < 8)
 				{
 					piece = ChessBoardManager.Instance.Pieces[i, j];
 					if (piece == null)
@@ -40,7 +41,7 @@ public class King : ChessPiece
 				i++;
 			}
 		}
-		
+
 		//down
 		i = PositionX - 1;
 		j = PositionY - 1;
@@ -67,9 +68,9 @@ public class King : ChessPiece
 		}
 
 		//mid-left
-		if(PositionX !=0)
+		if (PositionX != 0)
 		{
-		piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];
+			piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];
 			if (piece == null)
 			{
 				move[PositionX - 1, PositionY] = true;
@@ -97,14 +98,14 @@ public class King : ChessPiece
 		}
 
 		//castle right
-		if(isInitialMoveDone == false)
+		if (isInitialMoveDone == false)
 		{
 			piece = ChessBoardManager.Instance.Pieces[PositionX + 3, PositionY];
-			if(piece != null && piece.GetType() == typeof(Rook) && piece.isInitialMoveDone == false
+			if (piece != null && piece.GetType() == typeof(Rook) && piece.isInitialMoveDone == false
 				&& ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY] == null
 				&& ChessBoardManager.Instance.Pieces[PositionX + 2, PositionY] == null)
 			{
-				if(ChessBoardManager.Instance.isCheck == false)
+				if (ChessBoardManager.Instance.isCheck == false)
 					move[PositionX + 2, PositionY] = true;
 			}
 			piece = ChessBoardManager.Instance.Pieces[PositionX - 4, PositionY];
@@ -195,4 +196,106 @@ public class King : ChessPiece
 
 		return defend;
 	}
+
+	public bool[,] FilterForbiddenMoves(bool[,] allowedByCore, int x, int y)
+	{
+		bool[,] filtererd = allowedByCore;
+		bool[,] forbiddenMoves;
+		bool[,] protectedMoves;
+
+		foreach (ChessPiece p in ChessBoardManager.Instance.Pieces)// king forbidden moves because of the capture on them
+		{
+			if (p != null && p.isWhite != ChessBoardManager.Instance.isWhiteTurn)
+			{
+				forbiddenMoves = p.IsLegalMove();
+				protectedMoves = p.IsPieceDefended();
+
+				for (int i = 0; i < 8; i++)
+				{
+					for (int j = 0; j < 8; j++)
+					{
+						if (p.GetType() == typeof(Pawn))
+						{
+							if (p.kingCapture[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (protectedMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+						}
+						else
+						{
+							if (forbiddenMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (protectedMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (ChessBoardManager.Instance.Pieces[x, y].isInitialMoveDone == false && filtererd[x + 1, j] == false)
+							{
+								if (filtererd[x + 1, j] == false)
+								{
+									filtererd[x + 2, j] = false;
+								}
+								if (filtererd[x - 1, j] == false || filtererd[x - 2, j] == false)
+								{
+									filtererd[x - 2, j] = false;
+								}
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+
+		return filtererd;
+
+	}
+
+	public Tuple<int,int> GetKingPosition()
+	{
+		int x = -1;
+		int y = -1;
+		
+		foreach(ChessPiece piece in ChessBoardManager.Instance.Pieces)
+		{
+			if(piece != null && piece.isWhite == ChessBoardManager.Instance.isWhiteTurn)
+			{
+				if(piece.GetType() == typeof(King))
+				{
+					x = piece.PositionX;
+					y = piece.PositionY;
+				}
+			}
+		}
+		return Tuple.Create(x, y);
+	}
+
+	public bool SimulateKingMove()
+	{
+		var kingPos = GetKingPosition();
+		// get king position, then
+		// check his possible moves - if any possible return true
+		// else - return false
+		// used in checkmate check
+		ChessPiece k = ChessBoardManager.Instance.Pieces[kingPos.Item1, kingPos.Item2];
+		bool[,] a = k.IsLegalMove();
+		bool[,] b = FilterForbiddenMoves(a, kingPos.Item1, kingPos.Item2);
+		for(int i=0; i<b.GetLength(0); i++)
+		{
+			for(int j=0; j<b.GetLength(1); j++)
+			{
+				if (b[i, j] == true)
+					return true;
+			}
+		}
+		return false;
+	}
+
 }
