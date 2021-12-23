@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class King : ChessPiece
 {
-	public bool CastleKing = false;
-	public bool CastleQueen = false;
 
 	public override bool[,] IsLegalMove()
 	{

@@ -23,10 +23,10 @@ public class ChessBoardManager : MonoBehaviour
 
 	public bool isCheck = false;
 	public bool figureUnableToProtect = false;
+	public bool doNotPerformCheckScanForEnPassant = false;
+
 	public ChessPiece checkingPiece;
-
 	public King king;
-
 
 
 	#endregion
@@ -105,9 +105,12 @@ public class ChessBoardManager : MonoBehaviour
 			Tuple<int, int> key = new Tuple<int, int>(x, y);
 			allPossibleMovesForCheck.TryGetValue(key, out allowedForCheck);
 			allowedMoves = allowedForCheck;
-			var kingObject = gameObject.GetComponent<King>();
-			var filtered  = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
-			allowedMoves = filtered;
+			if(Pieces[x,y].GetType() == typeof(King))
+			{
+				var kingObject = gameObject.GetComponent<King>();
+				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
+				allowedMoves = filtered;
+			}
 		}
 		else
 		{
@@ -217,7 +220,7 @@ public class ChessBoardManager : MonoBehaviour
 			}
 
 			//reset en passant after 1 move
-			foreach (ChessPiece pawn in Pieces)//wydzielic do funkcji
+			foreach (ChessPiece pawn in Pieces)
 			{
 				if(pawn != null && pawn.isWhite == isWhiteTurn && pawn.GetType() == typeof(Pawn))
 				{
@@ -268,23 +271,26 @@ public class ChessBoardManager : MonoBehaviour
 				}
 			}
 
-
-			//TO DO - choose to which piece promote
-			//white promotion
+			// white promotion
 			if (y == 7 && selectedPiece.GetType() == typeof(Pawn))
 			{
 				chessPiecesActive.Remove(Pieces[x,y].gameObject);
 				Destroy(Pieces[x, y].gameObject);
 				SpawnChessPiece(4, x, y, "White Queen");
 			}
-			//
-			// black promotion - TODO
-			//
+			// black promotion
+			if(y == 0 && selectedPiece.GetType() == typeof(Pawn))
+			{
+				chessPiecesActive.Remove(Pieces[x, y].gameObject);
+				Destroy(Pieces[x, y].gameObject);
+				SpawnChessPiece(10, x, y, "Dark Queen");
+			}
 
 			//check scan
 			foreach (ChessPiece afterMove in Pieces)
 			{
-				if(afterMove != null && afterMove.isWhite == isWhiteTurn)
+				doNotPerformCheckScanForEnPassant = true;
+				if (afterMove != null && afterMove.isWhite == isWhiteTurn)
 				{
 					allowedMovesAfterMove = afterMove.IsLegalMove();
 					for (int row = 0; row < allowedMovesAfterMove.GetLength(0); row++)
@@ -296,7 +302,7 @@ public class ChessBoardManager : MonoBehaviour
 								var p = Pieces[row, col];
 								if (p != null && p.GetType() == typeof(King) && p.isWhite != isWhiteTurn)
 								{
-									Debug.Log("Check essssssssssa");
+									Debug.Log("CHECK STATE");
 									checkingPiece = afterMove;
 									isCheck = true;
 								}
@@ -305,7 +311,9 @@ public class ChessBoardManager : MonoBehaviour
 					}
 				}
 			}
-			
+
+			doNotPerformCheckScanForEnPassant = false;
+
 			//turn change
 			BoardAddons.Instance.ChangeTurnCubeColor(isWhiteTurn, cube);
 			isWhiteTurn = !isWhiteTurn;

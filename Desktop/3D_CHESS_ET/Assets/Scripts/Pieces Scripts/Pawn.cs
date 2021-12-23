@@ -60,48 +60,50 @@ public class Pawn : ChessPiece
 				if(p1 == null && p2 == null)
 				{
 					move[PositionX, PositionY + 2] = true;
-
-
-					//En passant check for a black pawn
-					if (PositionX > 0 && PositionX < 7)
+					if(ChessBoardManager.Instance.doNotPerformCheckScanForEnPassant == false)
 					{
-						p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY + 2];
-						p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY + 2];
-						if (p3 != null)
+						//En passant check for a black pawn
+						if (PositionX > 0 && PositionX < 7)
 						{
-							p3.isEnPassantEnabledRight = true;
-						}
-						if (p4 != null)
-						{
-							p4.isEnPassantEnabledLeft = true;
-						}
+							p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY + 2];
+							p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY + 2];
+							if (p3 != null && p3.GetType() == typeof(Pawn) && !p3.isWhite)
+							{
+								p3.isEnPassantEnabledRight = true;
+							}
+							if (p4 != null && p4.GetType() == typeof(Pawn) && !p4.isWhite)
+							{
+								p4.isEnPassantEnabledLeft = true;
+							}
 
-					}
-					else if (PositionX == 0)
-					{
-						//prawy
-						p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY + 2];
-						if (p3 != null)
-						{
-							p3.isEnPassantEnabledRight = true;
 						}
+						else if (PositionX == 0)
+						{
+							//prawy
+							p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY + 2];
+							if (p3 != null && p3.GetType() == typeof(Pawn) && !p3.isWhite)
+							{
+								p3.isEnPassantEnabledRight = true;
+							}
 
-					}
-					else if (PositionX == 7)
-					{
-						//lewy
-						p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY + 2];
-						if (p4 != null)
+						}
+						else if (PositionX == 7)
 						{
-							p4.isEnPassantEnabledLeft = true;
-							
+							//lewy
+							p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY + 2];
+							if (p4 != null && p4.GetType() == typeof(Pawn) && !p4.isWhite)
+							{
+								p4.isEnPassantEnabledLeft = true;
+
+							}
 						}
 					}
+
 				}			
 			}
 
 			//en passant move right 
-			if(PositionY == 4)
+			if(PositionY == 4 && PositionX < 7)
 			{
 				if (isEnPassantEnabledRight)
 				{
@@ -110,7 +112,7 @@ public class Pawn : ChessPiece
 			}
 
 			//en passant move left 
-			if (PositionY == 4 && PositionX < 7)
+			if (PositionY == 4 && PositionX > 0)
 			{
 				if (isEnPassantEnabledLeft)
 				{
@@ -135,7 +137,7 @@ public class Pawn : ChessPiece
 				}
 			}
 
-			//capture left
+			//capture right
 			if (PositionX != 0 && PositionY != 0)
 			{
 				p1 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 1];
@@ -169,48 +171,53 @@ public class Pawn : ChessPiece
 				{
 					move[PositionX, PositionY - 2] = true;
 
-					//En passant check for a white pawn
-					if (PositionX > 0 && PositionX < 7)
+					if(ChessBoardManager.Instance.doNotPerformCheckScanForEnPassant == false)
 					{
-						p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY - 2];
-						p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 2];
-						//left
-						if (p3 != null)
+						//En passant check for a white pawn
+						if (PositionX > 0 && PositionX < 7)
 						{
-							p3.isEnPassantEnabledLeft = true;
-						}
-						//right
-						if (p4 != null)
-						{
-							p4.isEnPassantEnabledRight = true;
-						}
+							p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY - 2];
+							p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 2];
+							//left
+							if (p3 != null && p3.GetType() == typeof(Pawn))
+							{
+								p3.isEnPassantEnabledLeft = true;
+							}
+							//right
+							if (p4 != null && p4.GetType() == typeof(Pawn))
+							{
+								p4.isEnPassantEnabledRight = true;
+							}
 
-					}
-					else if(PositionX == 0)
-					{
-						//left only
-						p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY - 2];
-						if (p3 != null)
-						{
-							p3.isEnPassantEnabledLeft = true;
 						}
-
-					}
-					else if(PositionX == 7)
-					{
-						//right only
-						p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 2];
-						if (p4 != null)
+						else if (PositionX == 0)
 						{
-							p4.isEnPassantEnabledRight = true;
-						}
+							//left only
+							p3 = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY - 2];
+							if (p3 != null && p3.GetType() == typeof(Pawn))
+							{
+								p3.isEnPassantEnabledLeft = true;
+							}
 
+						}
+						else if (PositionX == 7)
+						{
+							//right only
+							p4 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 2];
+							if (p4 != null && p4.GetType() == typeof(Pawn))
+							{
+								p4.isEnPassantEnabledRight = true;
+							}
+
+						}
 					}
+
+
 				}
 			}
 
 			//en passant move right 
-			if (PositionY == 3)
+			if (PositionY == 3 && PositionX > 0)
 			{
 				if (isEnPassantEnabledRight)
 				{
@@ -219,7 +226,7 @@ public class Pawn : ChessPiece
 			}
 
 			//en passant move left 
-			if (PositionY == 3)
+			if (PositionY == 3 && PositionX < 7)
 			{
 				if (isEnPassantEnabledLeft)
 				{
