@@ -114,11 +114,15 @@ public class ChessBoardManager : MonoBehaviour
 		}
 		else
 		{
+			if(!CheckIfAnyMovePossible())
+			{
+				Debug.Log("IT IS A DRAW!");
+			}
 			Debug.Log("selected:" + Pieces[x, y].name);
 			if (Pieces[x, y].GetType() == typeof(King))
 			{
 				allowedMoves = Pieces[x, y].IsLegalMove();
-				foreach (ChessPiece p in Pieces)// king forbidden moves because of the capture on them
+				foreach (ChessPiece p in Pieces)// king forbidden moves because of the capture on him
 				{
 					if (p != null && p.isWhite != isWhiteTurn)
 					{
@@ -171,6 +175,9 @@ public class ChessBoardManager : MonoBehaviour
 			else
 			{
 				allowedMoves = Pieces[x, y].IsLegalMove();
+				var p = Pieces[x, y];
+				FilterByPin(allowedMoves, p, x, y);
+
 			}
 		}
 
@@ -454,6 +461,78 @@ public class ChessBoardManager : MonoBehaviour
 		}
 	}
 	
+	private bool [,] FilterByPin(bool [,] allowed, ChessPiece piece, int posX, int posY)
+	{
+		bool checkFlag;
+
+		for (int i = 0; i < allowed.GetLength(0); i++)
+		{
+			for (int j = 0; j < allowed.GetLength(1); j++)
+			{
+				if (allowed[i, j] == true) //if move of a piece is possible
+				{
+					int savedX = posX; //Simulate the position
+					int savedY = posY; //...
+					ChessPiece saved = Pieces[i, j];
+					Pieces[i, j] = piece; //...
+					piece.SetPosition(i, j);
+					Pieces[savedX, savedY] = null; //...
+												   // for all available moves of selected piece
+												   // If after move simulation there is a check - move is forbidden
+					checkFlag = CheckScan();
+					if (checkFlag)
+					{
+						allowed[i, j] = false;
+					}
+
+					//reset the position
+					Pieces[i, j] = saved;
+					Pieces[savedX, savedY] = piece;
+					piece.SetPosition(savedX, savedY);
+				}
+			}
+		}
+			return allowed;
+	}
+
+	private bool CheckScan()
+	{
+		//check scan
+		foreach (ChessPiece afterMove in Pieces)
+		{
+			doNotPerformCheckScanForEnPassant = true;
+			if (afterMove != null && afterMove.isWhite != isWhiteTurn)
+			{
+				allowedMovesAfterMove = afterMove.IsLegalMove();
+				for (int row = 0; row < allowedMovesAfterMove.GetLength(0); row++)
+				{
+					for (int col = 0; col < allowedMovesAfterMove.GetLength(1); col++)
+					{
+						if (allowedMovesAfterMove[row, col] == true)
+						{
+							var p = Pieces[row, col];
+							if (p != null && p.GetType() == typeof(King) && p.isWhite == isWhiteTurn)
+							{
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private bool CheckIfAnyMovePossible()
+	{
+		//
+		//
+		//
+
+		return true;
+	}
+
 	private void MapPositionToChessPosition(int x, int y)
 	{
 		var o = PreparePositionDictionary();

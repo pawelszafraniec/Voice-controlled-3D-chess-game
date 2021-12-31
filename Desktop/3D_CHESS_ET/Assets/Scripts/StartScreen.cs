@@ -6,7 +6,9 @@ using UnityEngine.SceneManagement;
 public class StartScreen : MonoBehaviour
 {
 
-	public string Scene;
+	public string GameScene;
+	public string AboutScene;
+	public string ScoreBoardScene;
 
 	public void ExitGame()
 	{
@@ -14,8 +16,24 @@ public class StartScreen : MonoBehaviour
 		Application.Quit();
 	}
 
-	public void StartGame()
+	public void LoadGameScene()
 	{
-		SceneManager.LoadScene(Scene);
+		SceneManager.LoadScene(GameScene);
 	}
+
+	public void LoadAboutScene()
+	{
+		SceneManager.LoadScene(AboutScene);
+	}
+
+	public void LoadScoreboard()
+	{
+		SceneManager.LoadScene(ScoreBoardScene);
+	}
+
+	public void LoadStartScene()
+	{
+		SceneManager.LoadScene("StartScreen");
+	}
+
 }

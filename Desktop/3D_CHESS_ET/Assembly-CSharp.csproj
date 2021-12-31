@@ -70,7 +70,7 @@
     <Compile Include="Assets\Scripts\CaptureMoves.cs" />
     <Compile Include="Assets\Scripts\ChessBoardManager.cs" />
     <Compile Include="Assets\Scripts\ChessPiece.cs" />
-    <Compile Include="Assets\Scripts\Grid.cs" />
+    <Compile Include="Assets\Scripts\GameOptionsManager.cs" />
     <Compile Include="Assets\Scripts\HandleCheck.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Bishop.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\King.cs" />
