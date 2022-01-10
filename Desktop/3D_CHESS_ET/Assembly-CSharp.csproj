@@ -71,13 +71,14 @@
     <Compile Include="Assets\Scripts\ChessBoardManager.cs" />
     <Compile Include="Assets\Scripts\ChessPiece.cs" />
     <Compile Include="Assets\Scripts\GameOptionsManager.cs" />
-    <Compile Include="Assets\Scripts\HandleCheck.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Bishop.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\King.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Knight.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Pawn.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Queen.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Rook.cs" />
+    <Compile Include="Assets\Scripts\ResultHandler.cs" />
+    <Compile Include="Assets\Scripts\SliderMenuManager.cs" />
     <Compile Include="Assets\Scripts\SpecialMoves.cs" />
     <Compile Include="Assets\Scripts\StartScreen.cs" />
     <Compile Include="Assets\Scripts\StringHelper.cs" />

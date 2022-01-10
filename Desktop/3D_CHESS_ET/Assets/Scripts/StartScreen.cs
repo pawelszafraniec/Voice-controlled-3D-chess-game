@@ -10,8 +10,17 @@ public class StartScreen : MonoBehaviour
 	public string AboutScene;
 	public string ScoreBoardScene;
 
+	public GameObject ExitConfirmationDialog;
+	public GameObject EndGamePopup;
+
+	public void ShowExitConfirmationDialog()
+	{
+		ExitConfirmationDialog.SetActive(true);
+	}
+
 	public void ExitGame()
 	{
+
 		Debug.Log("exit game was triggered");
 		Application.Quit();
 	}
@@ -19,6 +28,7 @@ public class StartScreen : MonoBehaviour
 	public void LoadGameScene()
 	{
 		SceneManager.LoadScene(GameScene);
+		Time.timeScale = 1;
 	}
 
 	public void LoadAboutScene()
@@ -36,4 +46,16 @@ public class StartScreen : MonoBehaviour
 		SceneManager.LoadScene("StartScreen");
 	}
 
+
+	public void DoNotExitGame()
+	{
+		ExitConfirmationDialog.SetActive(false);
+	}
+
+	public void HidePopUpDialog()
+	{
+		EndGamePopup.SetActive(false);
+		Timer.Instance.timerIsRunningWhite = false;
+		Timer.Instance.timerIsRunningBlack = false;
+	}
 }
