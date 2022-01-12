@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class VoiceRecognition : MonoBehaviour
 {
-	public GameObject imageForVoiceControl;
+	public Image VoiceControl;
 	public Text RecognizerReading;
 
 	public static VoiceRecognition Instance { get; set; }
@@ -19,6 +19,8 @@ public class VoiceRecognition : MonoBehaviour
 	private char[] possible_numbers = { '1', '2', '3', '4', '5', '6', '7', '8' };
 	private char[] possible_characters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 
+	public Errors errors_tables;
+
 	/*
 	 * Necessary for voice activation:
 	 * -> Microphone enabled in Capablities in Player project settings
@@ -26,20 +28,22 @@ public class VoiceRecognition : MonoBehaviour
 	 * -> Windows Speech recognition enabled
 	 * -> Cortana installed and enabled
 	*/
-	private void DeviceControl()
+	private bool DeviceControl()
 	{
 		foreach (var device in Microphone.devices)
 		{
 			Debug.Log("Name: " + device); // must exist
+			if (Microphone.devices.Length == 0)
+				return false;
 		}
 
 		if (Application.systemLanguage == SystemLanguage.English)
 		{
 			Debug.Log("This system is in English. "); // must have
 		}
-		if (Application.systemLanguage == SystemLanguage.Polish)
+		else
 		{
-			Debug.Log("This system is in Polish. ");
+			return false;
 		}
 
 		if (PhraseRecognitionSystem.isSupported)
@@ -48,22 +52,32 @@ public class VoiceRecognition : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("Phrase recognition is NOT supported!");
+			return false;
 		}
+		return true;
 
-		//kontrolka w rogu:
-		//na zielono - wszystko ify spelnione
-		//na czerwono - nie wszystko spelnione
+	}
 
+	public void RestartDictation()
+	{
+		DictationRecognizer.Stop();
+		DictationRecognizer.Dispose();
+		DictationRecognizer = new DictationRecognizer();
+		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;
+		DictationRecognizer.InitialSilenceTimeoutSeconds = 10f;
+		DictationRecognizer.DictationResult += OnRecognizeSpeech;
+		DictationRecognizer.Start();
+		Debug.Log("RESTART");
 	}
 
 	public void Start()
 	{
+		errors_tables = new Errors();
 		Instance = this;
 		DeviceControl();
 
 		DictationRecognizer = new DictationRecognizer();
-		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;
+		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;//ustawic na 20
 		DictationRecognizer.InitialSilenceTimeoutSeconds = 10f;
 		DictationRecognizer.DictationResult += OnRecognizeSpeech;
 		DictationRecognizer.Start();
@@ -71,24 +85,13 @@ public class VoiceRecognition : MonoBehaviour
 
 	public void Update()
 	{
-		if (DictationRecognizer.Status.Equals(SpeechSystemStatus.Stopped)
-			|| DictationRecognizer.Status.Equals(SpeechSystemStatus.Failed))
-		{
-			DictationRecognizer.Start();
-			//dla hey/ey/age itd.
-			Debug.Log("Dictation recognizer started again after the timeout");
-			Debug.Log(DictationRecognizer.AutoSilenceTimeoutSeconds);
-			Debug.Log(DictationRecognizer.InitialSilenceTimeoutSeconds);
-			Debug.Log(DictationRecognizer.Status);
-		}
-
 		if (DictationRecognizer.Status.Equals(SpeechSystemStatus.Running))
 		{
-			imageForVoiceControl.GetComponent<Image>().color = Color.green;
+			VoiceControl.GetComponent<Image>().color = Color.green;
 		}
 		else
 		{
-			imageForVoiceControl.GetComponent<Image>().color = Color.red;
+			VoiceControl.GetComponent<Image>().color = Color.red;
 		}
 
 	}
@@ -97,14 +100,24 @@ public class VoiceRecognition : MonoBehaviour
 	{
 		Debug.Log(speech.ToString()); //D2D5
 		string ab = speech.ToString();
+		if(ab.Length < 4 || ab.Length > 7)
+		{
+			RecognizerReading.text = "Couldn't recognize the command. Try again.";
+		}
+		if (ab.Length > 4)
+		{
+			ab = ab.Replace(" ", "");
+			ab = ValidateWords(ab);
+		}
 		var first = ab.Substring(0, (int)(ab.Length / 2));
 		var last = ab.Substring((int)(ab.Length / 2), (int)(ab.Length / 2));
-
 
 		Debug.Log(first + "TO" + last);
 
 		var startScreen = gameObject.GetComponent<StartScreen>();
-		if (ab == "quit" || ab == "quit game" || ab == "exit" || ab == "exit game")
+		var a = errors_tables.two_digits_errors_with_A_letter;
+
+		if (ab == "quit" || ab == "quitgame" || ab == "exit" || ab == "exitgame")
 		{
 			ChessBoardManager.Instance.popUpExitConfirmation.SetActive(true);
 		}
@@ -122,12 +135,16 @@ public class VoiceRecognition : MonoBehaviour
 		}
 		if (ChessBoardManager.Instance.popUpWindowForEndGame.activeInHierarchy == true)
 		{
-			if (ab == "play again")
+			if (ab == "playagain")
 			{
 				startScreen.LoadGameScene();
+				RestartDictation();
 			}
 		}
-		if (ab == "castle king" || ab == "castle king side")
+		if (ab == "castleking" || ab == "castlekingside")
+		{
+			RecognizerReading.text = ab;
+		}
 
 		if (first.Length == 2 && last.Length == 2)
 		{
@@ -160,6 +177,32 @@ public class VoiceRecognition : MonoBehaviour
 		ChessBoardManager.Instance.MoveChessPiece(to.Item1, to.Item2);
 	}
 
+	private string ValidateWords(string input)
+	{
+		string output = input;
+		if(input.Length == 5) // e.g. ey3d5 - ey => a
+		{
+			string copied = Char.ToString(input[0]) + Char.ToString(input[1]);
+			string rest = Char.ToString(input[2]) + Char.ToString(input[3]) + Char.ToString(input[4]);
+			if (errors_tables.two_digits_errors_with_A_letter.Contains(copied))
+			{
+				char corrected = 'A';
+				output = corrected + rest;
+			}
+		}
+		else if(input.Length == 6) // e.g. eat3d5 - eat => a
+		{
+			string copied = Char.ToString(input[0]) + Char.ToString(input[1]) + Char.ToString(input[2]);
+			string rest = Char.ToString(input[3]) + Char.ToString(input[4]) + Char.ToString(input[5]);
+			if (errors_tables.three_digits_errors_with_A_letter.Contains(copied))
+			{
+				char corrected = 'A';
+				output = corrected + rest;
+			}
+		}
+		return output;
+	}
+
 	private string ValidateMovement(string value, char[] letters, char[] numbers)
 	{
 		char first = value[0];
@@ -179,6 +222,8 @@ public class VoiceRecognition : MonoBehaviour
 
 
 		string output = Char.ToString(first) + Char.ToString(second);
+		Debug.Log("Validated: " + output);
+
 		return output;
 	}
 }

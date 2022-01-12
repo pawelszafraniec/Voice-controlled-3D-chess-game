@@ -13,6 +13,7 @@ public class Bishop : ChessPiece
 		int i;
 		int j;
 
+		//top-left
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -31,6 +32,7 @@ public class Bishop : ChessPiece
 			}
 		}
 
+		//top-right
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -49,6 +51,7 @@ public class Bishop : ChessPiece
 			}
 		}
 
+		//down-left
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -69,7 +72,7 @@ public class Bishop : ChessPiece
 
 		i = PositionX;
 		j = PositionY;
-		//down-right diagonal
+		//down-right
 		while (true)
 		{
 			i++;

@@ -63,13 +63,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Chess assets\Example\Scripts\CameraRotate.cs" />
+    <Compile Include="Assets\ALL_ASSETS\Chess assets\Example\Scripts\CameraRotate.cs" />
     <Compile Include="Assets\Chess\Scripts\ChessUiEngine.cs" />
     <Compile Include="Assets\Scripts\BoardAddons.cs" />
     <Compile Include="Assets\Scripts\CameraChange.cs" />
     <Compile Include="Assets\Scripts\CaptureMoves.cs" />
     <Compile Include="Assets\Scripts\ChessBoardManager.cs" />
     <Compile Include="Assets\Scripts\ChessPiece.cs" />
+    <Compile Include="Assets\Scripts\Errors.cs" />
     <Compile Include="Assets\Scripts\GameOptionsManager.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Bishop.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\King.cs" />
@@ -78,6 +79,11 @@
     <Compile Include="Assets\Scripts\Pieces Scripts\Queen.cs" />
     <Compile Include="Assets\Scripts\Pieces Scripts\Rook.cs" />
     <Compile Include="Assets\Scripts\ResultHandler.cs" />
+    <Compile Include="Assets\Scripts\Score\Data.cs" />
+    <Compile Include="Assets\Scripts\Score\RowHelper.cs" />
+    <Compile Include="Assets\Scripts\Score\Score.cs" />
+    <Compile Include="Assets\Scripts\Score\ScoreManager.cs" />
+    <Compile Include="Assets\Scripts\Score\ScoreUI.cs" />
     <Compile Include="Assets\Scripts\SliderMenuManager.cs" />
     <Compile Include="Assets\Scripts\SpecialMoves.cs" />
     <Compile Include="Assets\Scripts\StartScreen.cs" />
@@ -135,7 +141,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
-    <None Include="Assets\Chess assets\README.txt" />
+    <None Include="Assets\ALL_ASSETS\Chess assets\README.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />

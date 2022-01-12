@@ -11,6 +11,7 @@ public class ChessBoardManager : MonoBehaviour
 {
 	#region fields
 	public static ChessBoardManager Instance { get; set; }
+	public ScoreManager manager;
 
 	private const float TileSize = 1.0f;
 	private const float TileOffSet = 0.5f; // TileSize / 2
@@ -39,9 +40,6 @@ public class ChessBoardManager : MonoBehaviour
 	public GameObject popUpWindowForWhitePromotion;
 	public GameObject popUpWindowForBlackPromotion;
 	public GameObject popUpExitConfirmation;
-
-	public string WhiteName = GameOptionsManager.playerWhiteName;
-	public string BlackName = GameOptionsManager.playerBlackName;
 
 	#endregion
 	#region serialized_fields
@@ -128,10 +126,10 @@ public class ChessBoardManager : MonoBehaviour
 		}
 		else
 		{
-			if(!CheckIfAnyMovePossible())
-			{
-				Debug.Log("IT IS A DRAW!");
-			}
+			//if(!CheckIfAnyMovePossible(bool))
+			//{
+			//	Debug.Log("IT IS A DRAW!");
+			//}
 			Debug.Log("selected:" + Pieces[x, y].name);
 			if (Pieces[x, y].GetType() == typeof(King))
 			{
@@ -464,6 +462,7 @@ public class ChessBoardManager : MonoBehaviour
 		}
 	}
 
+	//
 	private bool isPromotionMove(int posY, ChessPiece piece)
 	{
 		if ((posY == 7 || posY == 0) && piece.GetType() == typeof(Pawn))
@@ -532,32 +531,20 @@ public class ChessBoardManager : MonoBehaviour
 	public string CheckWinner(bool turn)
 	{
 		string result = "Game over, checkmate. ";
-		if(turn)
+		DateTime now = DateTime.Now;
+		if (turn)
 		{
-			result += WhiteName + " won!";
+			result += GameOptionsManager.playerWhiteName + " won!";
+			manager.AddScore(new Score("1", GameOptionsManager.playerWhiteName, GameOptionsManager.playerBlackName, now.ToString("MM/dd/yyyy H:mm")));
 		}
 		else
 		{
-			result += BlackName + " won!";
+			result += GameOptionsManager.playerBlackName + " won!";
+			manager.AddScore(new Score("1", GameOptionsManager.playerBlackName, GameOptionsManager.playerWhiteName, now.ToString("MM/dd/yyyy H:mm")));
 
 		}
-		//SaveResultToTheFile(result);
 		return result;
 	}
-
-	//private void SaveResultToTheFile(string result)
-	//{
-	//	string path = @"\C:\Users\User\Desktop\3D_CHESS_ET\results.txt";
-	//	if(!File.Exists(path))
-	//	{
-	//		File.Create(path);
-	//	}
-	//	using (FileStream fs = File.Open(path, FileMode.OpenOrCreate)) 
-	//	{
-	//		File.AppendText(path).WriteLine(result);
-	//	}
-
-	//}
 
 	private bool [,] FilterByPin(bool [,] allowed, ChessPiece piece, int posX, int posY)
 	{
@@ -622,11 +609,19 @@ public class ChessBoardManager : MonoBehaviour
 		return false;
 	}
 
-	private bool CheckIfAnyMovePossible()
+	private bool CheckIfAnyMovePossible(bool turn)
 	{
+		foreach(ChessPiece piece in Pieces)
+		{
+			if(piece.isWhite == isWhiteTurn)
+			{
+
+			}
+		}
 		//
 		//
 		//
+		
 
 		return true;
 	}
