@@ -4,6 +4,23 @@ using UnityEngine;
 
 public class Queen : ChessPiece
 {
+	public Queen() : base()
+	{
+
+	}
+
+	protected Queen(Queen k) : base(k)
+	{
+
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<Queen>();
+		piece.SetValues(this);
+		return piece;
+	}
+
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];
@@ -251,10 +268,22 @@ public class Queen : ChessPiece
 			}
 
 			piece = ChessBoardManager.Instance.Pieces[i, PositionY];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[i, PositionY] = true;
+				if(isWhite == piece.isWhite)
+				{
+					defend[i, PositionY] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
+			//&& isWhite == piece.isWhite)
+			//{
+			//	defend[i, PositionY] = true;
+			//}
 		}
 
 		//left
@@ -268,10 +297,17 @@ public class Queen : ChessPiece
 			}
 
 			piece = ChessBoardManager.Instance.Pieces[i, PositionY];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[i, PositionY] = true;
-				break;
+				if(isWhite == piece.isWhite)
+				{
+					defend[i, PositionY] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
 
@@ -286,10 +322,18 @@ public class Queen : ChessPiece
 			}
 
 			piece = ChessBoardManager.Instance.Pieces[PositionX, i];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[PositionX, i] = true;
-				break;
+				if(isWhite == piece.isWhite)
+				{
+					defend[PositionX, i] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
+
 			}
 		}
 
@@ -304,10 +348,18 @@ public class Queen : ChessPiece
 			}
 
 			piece = ChessBoardManager.Instance.Pieces[PositionX, i];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[PositionX, i] = true;
-				break;
+				if (isWhite == piece.isWhite)
+				{
+					defend[PositionX, i] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
+
 			}
 		}
 		#endregion
@@ -324,10 +376,17 @@ public class Queen : ChessPiece
 				break;
 			}
 			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if (piece != null && isWhite == piece.isWhite)
+			if(piece != null)
 			{
-				defend[i, j] = true;
-				break;
+				if (isWhite == piece.isWhite)
+				{
+					defend[i, j] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
 
@@ -343,10 +402,17 @@ public class Queen : ChessPiece
 				break;
 			}
 			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if (piece != null && isWhite == piece.isWhite)
+			if(piece != null)
 			{
-				defend[i, j] = true;
-				break;
+				if(isWhite == piece.isWhite)
+				{
+					defend[i, j] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
 
@@ -362,10 +428,17 @@ public class Queen : ChessPiece
 				break;
 			}
 			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[i, j] = true;
-				break;
+				if (isWhite == piece.isWhite)
+				{
+					defend[i, j] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
 
@@ -381,13 +454,19 @@ public class Queen : ChessPiece
 				break;
 			}
 			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if (piece != null && isWhite == piece.isWhite)
+			if (piece != null)
 			{
-				defend[i, j] = true;
-				break;
+				if (isWhite == piece.isWhite)
+				{
+					defend[i, j] = true;
+					break;
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
-
 		#endregion
 		return defend;
 	}

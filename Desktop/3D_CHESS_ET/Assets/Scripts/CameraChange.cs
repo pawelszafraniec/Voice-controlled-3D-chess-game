@@ -6,7 +6,13 @@ public class CameraChange : MonoBehaviour
 {
     [SerializeField] Camera cameraMain;
     [SerializeField] Camera cameraSecond;
-    // Start is called before the first frame update
+
+    [SerializeField] Light lightForMainCamera;
+    [SerializeField] Light lightForSecondaryCamera;
+
+    [SerializeField] GameObject whiteMarkings;
+    [SerializeField] GameObject darkMarkings;
+
     void Start()
     {
         cameraMain.gameObject.SetActive(true);
@@ -15,22 +21,36 @@ public class CameraChange : MonoBehaviour
         cameraSecond.enabled = false;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if(ChessBoardManager.Instance.isWhiteTurn)
 		{
-            cameraMain.gameObject.SetActive(true);
-            cameraSecond.gameObject.SetActive(false);
-            cameraMain.enabled = true;
+			cameraMain.gameObject.SetActive(true);
+			cameraSecond.gameObject.SetActive(false);
+			cameraMain.enabled = true;
             cameraSecond.enabled = false;
+
+
+            
+            lightForMainCamera.enabled = true;
+            lightForSecondaryCamera.enabled = false;
+
+            whiteMarkings.SetActive(true);
+            darkMarkings.SetActive(false);
         }
         else
 		{
-            cameraMain.gameObject.SetActive(false);
-            cameraSecond.gameObject.SetActive(true);
-            cameraMain.enabled = false;
+			cameraMain.gameObject.SetActive(false);
+			cameraSecond.gameObject.SetActive(true);
+			cameraMain.enabled = false;
             cameraSecond.enabled = true;
+
+
+            lightForMainCamera.enabled = false;
+            lightForSecondaryCamera.enabled = true;
+
+            whiteMarkings.SetActive(false);
+            darkMarkings.SetActive(true);
         }
     }
 }

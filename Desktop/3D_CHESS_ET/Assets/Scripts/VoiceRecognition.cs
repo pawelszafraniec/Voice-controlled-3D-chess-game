@@ -18,7 +18,7 @@ public class VoiceRecognition : MonoBehaviour
 
 	private char[] possible_numbers = { '1', '2', '3', '4', '5', '6', '7', '8' };
 	private char[] possible_characters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
-
+	
 	public Errors errors_tables;
 
 	/*
@@ -54,6 +54,7 @@ public class VoiceRecognition : MonoBehaviour
 		{
 			return false;
 		}
+		Debug.Log("Speech recognition can operate.");
 		return true;
 
 	}
@@ -72,12 +73,11 @@ public class VoiceRecognition : MonoBehaviour
 
 	public void Start()
 	{
-		errors_tables = new Errors();
 		Instance = this;
 		DeviceControl();
 
 		DictationRecognizer = new DictationRecognizer();
-		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;//ustawic na 20
+		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;
 		DictationRecognizer.InitialSilenceTimeoutSeconds = 10f;
 		DictationRecognizer.DictationResult += OnRecognizeSpeech;
 		DictationRecognizer.Start();
@@ -140,10 +140,6 @@ public class VoiceRecognition : MonoBehaviour
 				startScreen.LoadGameScene();
 				RestartDictation();
 			}
-		}
-		if (ab == "castleking" || ab == "castlekingside")
-		{
-			RecognizerReading.text = ab;
 		}
 
 		if (first.Length == 2 && last.Length == 2)

@@ -11,8 +11,6 @@ public class ScoreUI : MonoBehaviour
 
 	void Start()
 	{
-		//manager.AddScore(new Score("12314", DateTime.Now.TimeOfDay));
-
 		var scores = manager.GetScoresByData().ToArray();
 		for(int i = 0; i < scores.Length; i++)
 		{
@@ -21,6 +19,8 @@ public class ScoreUI : MonoBehaviour
 			r.Winner.text = scores[i].winner;
 			r.Lost.text = scores[i].lost;
 			r.DateGame.text = scores[i].scoreTime;
+			r.numberOfMoves.text = scores[i].numberOfMoves.ToString();
+			r.gameCourse.text = scores[i].gameCourse;
 		}
 	}
 }

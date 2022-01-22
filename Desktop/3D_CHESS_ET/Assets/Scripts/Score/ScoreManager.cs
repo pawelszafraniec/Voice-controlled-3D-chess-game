@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -34,4 +35,11 @@ public class ScoreManager : MonoBehaviour
 		PlayerPrefs.SetString("Scores", json);
 	}
 
+	public void SaveToClipboard(Text result)
+	{
+		TextEditor editor = new TextEditor();
+		editor.text = result.text;
+		editor.SelectAll();
+		editor.Copy();
+	}
 }

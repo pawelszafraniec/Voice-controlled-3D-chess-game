@@ -4,6 +4,23 @@ using UnityEngine;
 
 public class Rook : ChessPiece
 {
+	public Rook() : base()
+	{
+
+	}
+
+	protected Rook(Rook k) : base(k)
+	{
+
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<Rook>();
+		piece.SetValues(this);
+		return piece;
+	}
+
 	public override bool[,] IsLegalMove()
 	{
 		bool [,] b = new bool[8, 8];
@@ -166,8 +183,6 @@ public class Rook : ChessPiece
 				break;
 			}
 		}
-
-		//Down
 		i = PositionY;
 		while (true)
 		{

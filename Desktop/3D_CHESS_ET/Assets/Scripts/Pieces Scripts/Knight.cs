@@ -4,6 +4,23 @@ using UnityEngine;
 
 public class Knight : ChessPiece
 {
+	public Knight() : base()
+	{
+
+	}
+
+	protected Knight(Knight k) : base(k)
+	{
+
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<Knight>();
+		piece.SetValues(this);
+		return piece;
+	}
+
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];

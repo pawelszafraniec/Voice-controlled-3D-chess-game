@@ -12,6 +12,8 @@ public class GameOptionsManager : MonoBehaviour
 	public Text PlayerBlackName;
 	public Text CustomTimer;
 	public Text CustomIncrement;
+	public Toggle readMovesToggle;
+	public Toggle cameraRotationToggle;
 
 	public static string timeValue;
 	public static string playerWhiteName;
@@ -20,11 +22,17 @@ public class GameOptionsManager : MonoBehaviour
 	public static int customTimerValue;
 	public static int customIncrementValue;
 
+	public static bool VoiceReadMovesEnabled;
+	public static bool CameraRotationEnabled;
+
 	public void Update()
 	{
 		timeValue = timeDropdown.options[timeDropdown.value].text;
 		playerWhiteName = PlayerWhiteName.text;
 		playerBlackName = PlayerBlackName.text;
+
+		VoiceReadMovesEnabled = readMovesToggle.isOn;
+		CameraRotationEnabled = cameraRotationToggle.isOn;
 
 		SetCustomOptions();
 	}

@@ -5,6 +5,25 @@ using UnityEngine;
 
 public class Pawn : ChessPiece
 {
+
+
+	public Pawn() : base()
+	{
+
+	}
+
+	protected Pawn(Pawn k) : base(k)
+	{
+
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<Pawn>();
+		piece.SetValues(this);
+		return piece;
+	}
+
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];
@@ -277,7 +296,7 @@ public class Pawn : ChessPiece
 				}
 			}
 
-			//capture left
+			//capture right
 			if (PositionX != 0 && PositionY != 0)
 			{
 				p1 = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY - 1];

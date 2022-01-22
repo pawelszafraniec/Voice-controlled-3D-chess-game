@@ -4,6 +4,23 @@ using UnityEngine;
 
 public class Bishop : ChessPiece
 {
+	public Bishop() : base()
+	{
+
+	}
+
+	protected Bishop(Bishop bishop) : base(bishop)
+	{
+		
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<Bishop>();
+		piece.SetValues(this);
+		return piece;
+	}
+
 	public override bool[,] IsPieceDefended()
 	{
 		bool[,] defend = new bool[8, 8];
@@ -82,7 +99,7 @@ public class Bishop : ChessPiece
 				break;
 			}
 			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if ((piece != null) && isWhite != piece.isWhite)
+			if ((piece != null) && isWhite == piece.isWhite)
 			{
 				defend[i, j] = true;
 				break;

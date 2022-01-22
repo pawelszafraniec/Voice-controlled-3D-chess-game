@@ -7,7 +7,8 @@ using System;
 
 public class Timer : MonoBehaviour
 {
-    string TimerValue = GameOptionsManager.timeValue;
+	#region fields
+	string TimerValue = GameOptionsManager.timeValue;
     string WhiteName = GameOptionsManager.playerWhiteName;
     string BlackName = GameOptionsManager.playerBlackName;
 
@@ -29,6 +30,11 @@ public class Timer : MonoBehaviour
 
     public string result;
 
+    public ScoreManager manager;
+    public int flag = 0;
+
+    #endregion
+
     private void Start()
 	{
         Instance = this;
@@ -42,6 +48,7 @@ public class Timer : MonoBehaviour
         timerIsRunningBlack = true;
         DisplayTime(timeRemainingWhite, timeTextWhite);
         DisplayTime(timeRemainingBlack - 1, timeTextBlack);
+        flag = 0;
     }
 
     void SetTimers()
@@ -89,7 +96,6 @@ public class Timer : MonoBehaviour
                 ifIncrement = true;
                 incrementValue = customIncr;
                 break;
-
             default:
                 timeRemainingBlack = 10 * 60;
                 timeRemainingWhite = 10 * 60;
@@ -99,7 +105,9 @@ public class Timer : MonoBehaviour
 
     void Update()
 	{
-        if(ChessBoardManager.Instance.isWhiteTurn)
+        DateTime now = DateTime.Now;
+
+        if (ChessBoardManager.Instance.isWhiteTurn)
 		{
 			timerIsRunningBlack = false;
             timerIsRunningWhite = true;
@@ -116,6 +124,11 @@ public class Timer : MonoBehaviour
                     ChessBoardManager.Instance.EndGamePopUp(result);
                     timeRemainingWhite = 0;
                     timerIsRunningWhite = false;
+                    if(flag == 0)
+					{
+                        ChessBoardManager.Instance.manager.AddScore(new Score("1", BlackName, WhiteName + " (timeout)", now.ToString("MM/dd/yyyy H:mm"), ChessBoardManager.Instance.numberOfMoves, ChessBoardManager.Instance.chessNotation));
+                        flag = 1;
+                    }
                 }
             }
         }
@@ -136,6 +149,12 @@ public class Timer : MonoBehaviour
                     ChessBoardManager.Instance.EndGamePopUp(result);
                     timeRemainingBlack = 0;
                     timerIsRunningBlack = false;
+                    
+                    if(flag == 0)
+					{
+                        ChessBoardManager.Instance.manager.AddScore(new Score("1", WhiteName, BlackName + " (timeout)", now.ToString("MM/dd/yyyy H:mm"), ChessBoardManager.Instance.numberOfMoves, ChessBoardManager.Instance.chessNotation));
+                        flag = 1;
+					}
                 }
             }
         }

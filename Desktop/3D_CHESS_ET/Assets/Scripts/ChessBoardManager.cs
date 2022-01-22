@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Windows.Speech;
 using System.Linq;
 using UnityEngine.UI;
-using System.IO;
 
 public class ChessBoardManager : MonoBehaviour
 {
 	#region fields
 	public static ChessBoardManager Instance { get; set; }
 	public ScoreManager manager;
+	public ChessPiece checkingPiece;
+	public King king;
 
 	private const float TileSize = 1.0f;
 	private const float TileOffSet = 0.5f; // TileSize / 2
-	private const int TilesX = 8, TilesY = 8;  
+	private const int TilesX = 8, TilesY = 8;
 
 	private int locationX = -1, locationY = -1;
 	public int XLocation;
@@ -26,35 +25,47 @@ public class ChessBoardManager : MonoBehaviour
 	private ChessPiece selectedPiece;
 	public bool isWhiteTurn = true;
 
-	public bool isPromotionDone = false;
-
 	public bool isCheck = false;
+	public bool isMate = false;
+	public bool isDraw = false;
+	public bool isCastle = false;
+	public int numberOfMoves = 0;
+
+	public string chessNotation = "";
+	public string figureSelected;
+	public string whereFrom;
+
 	public bool figureUnableToProtect = false;
 	public bool doNotPerformCheckScanForEnPassant = false;
-
-	public ChessPiece checkingPiece;
-	public King king;
 
 	public Text endGameText;
 	public GameObject popUpWindowForEndGame;
 	public GameObject popUpWindowForWhitePromotion;
 	public GameObject popUpWindowForBlackPromotion;
 	public GameObject popUpExitConfirmation;
+	public GameObject cameraRotation;
+
+	private string MoveInSpeech = "";
+	private string check = "";
+	private string mate = "";
+	public Button speechReader;
+	public AudioSourceManager MoveReaderCustom;
+
+	private List<int?[,]> positionsList = new List<int?[,]>();
 
 	#endregion
 	#region serialized_fields
 	[SerializeField] public GameObject cube;
+	[SerializeField] public GameObject marking;
+	[SerializeField] public GameObject additionalMarking;
 	#endregion
 	#region structures
-	public ChessPiece [,] Pieces { get; set; }
+	public ChessPiece[,] Pieces { get; set; }
+
 	private bool [,] allowedMoves { get; set; }
 	private bool [,] tempAllowedMoves { get; set; }
 
-	private bool [,] forbiddenMoves { get; set; }
-	private bool [,] protectedMoves { get; set; }
-
 	private bool [,] allowedMovesAfterMove { get; set; }
-
 	private Dictionary<Tuple<int, int>, bool[,]> allPossibleMovesForCheck = new Dictionary<Tuple<int, int>, bool[,]>();
 	private bool [,] currentlyPossibleMoves = new bool[8, 8];
 	private bool [,] tempPossibleMoves = new bool[8, 8];
@@ -65,20 +76,28 @@ public class ChessBoardManager : MonoBehaviour
 	#endregion
 	#region methods
 
+	/*
+	 *  __START METHOD__
+	 */
 	private void Start()
 	{
 		Instance = this;
 		SpawnAllChessPieces();
 		DrawGameBoard();
-
+		CheckReadingMoves();
+		CheckCameraRotation();
 	}
 
+	/*
+	 *  __UPDATE METHOD__
+	 */
 	private void Update()
 	{
 		SelectedField();
 
 		if(Input.GetMouseButtonDown(0))
 		{
+
 			Debug.Log(locationX);
 			Debug.Log(locationY);
 			MapPositionToChessPosition(locationX,locationY);
@@ -95,9 +114,35 @@ public class ChessBoardManager : MonoBehaviour
 				}
 			}
 		}
+	}
+
+	private void CheckReadingMoves()
+	{
+		if(GameOptionsManager.VoiceReadMovesEnabled == false)
+		{
+			MoveReaderCustom.GetComponent<AudioSource>().mute = true;
+			speechReader.image.color = Color.red;
+		}
+		else
+		{
+			speechReader.image.color = Color.green;
+		}
+
 
 	}
 
+	private void CheckCameraRotation()
+	{
+		if(GameOptionsManager.CameraRotationEnabled == false)
+		{
+			cameraRotation.SetActive(false);
+		}
+		else
+		{
+			cameraRotation.SetActive(true);
+		}
+	}
+	
 	public void SelectChessPiece(int x, int y)
 	{
 		if(Pieces[x,y] == null)
@@ -123,66 +168,22 @@ public class ChessBoardManager : MonoBehaviour
 				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
 				allowedMoves = filtered;
 			}
+			else
+			{
+				var p = Pieces[x, y];
+				FilterByPin(allowedMoves, p, x, y);
+			}
+			allPossibleMovesForCheck.Clear();
 		}
 		else
 		{
-			//if(!CheckIfAnyMovePossible(bool))
-			//{
-			//	Debug.Log("IT IS A DRAW!");
-			//}
 			Debug.Log("selected:" + Pieces[x, y].name);
 			if (Pieces[x, y].GetType() == typeof(King))
 			{
 				allowedMoves = Pieces[x, y].IsLegalMove();
-				foreach (ChessPiece p in Pieces)// king forbidden moves because of the capture on him
-				{
-					if (p != null && p.isWhite != isWhiteTurn)
-					{
-						forbiddenMoves = p.IsLegalMove();
-						protectedMoves = p.IsPieceDefended();
-
-						for (int i = 0; i < 8; i++)
-						{
-							for (int j = 0; j < 8; j++)
-							{
-								if (p.GetType() == typeof(Pawn)) 
-								{
-									if (p.kingCapture[i, j] == true && allowedMoves[i, j] == true)
-									{
-										allowedMoves[i, j] = false;
-									}
-									if (protectedMoves[i, j] == true && allowedMoves[i, j] == true)
-									{
-										allowedMoves[i, j] = false;
-									}
-								}
-								else
-								{
-									if (forbiddenMoves[i, j] == true && allowedMoves[i, j] == true)
-									{
-										allowedMoves[i, j] = false;
-									}
-									if (protectedMoves[i, j] == true && allowedMoves[i, j] == true)
-									{
-										allowedMoves[i, j] = false;
-									}
-									if (Pieces[x, y].isInitialMoveDone == false && allowedMoves[x + 1, j] == false)
-									{
-										if (allowedMoves[x + 1, j] == false)
-										{
-											allowedMoves[x + 2, j] = false;
-										}
-										if (allowedMoves[x - 1, j] == false || allowedMoves[x - 2, j] == false)
-										{
-											allowedMoves[x - 2, j] = false;
-										}
-									}
-								}
-							}
-
-						}
-					}
-				}
+				var kingObject = gameObject.GetComponent<King>();
+				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
+				allowedMoves = filtered;
 			}
 			else
 			{
@@ -194,19 +195,26 @@ public class ChessBoardManager : MonoBehaviour
 		}
 
 		selectedPiece = Pieces[x, y];
-
 		BoardAddons.Instance.HighlightAllowedMoves(allowedMoves);
+
+		MoveInSpeech = selectedPiece.GetType().ToString();
+		whereFrom = MapPositionToChessPosition(x, y);
 	}
 
 	public void MoveChessPiece(int x, int y)
 	{
-		if (allowedMoves[x, y])
+
+		if (allowedMoves[x, y] && selectedPiece != null)
 		{
+			chessNotation += BoardAddons.Instance.GetNotationForAPiece(MoveInSpeech);
+			chessNotation += whereFrom[0].ToString().ToLower();
+
 			ChessPiece piece = Pieces[x, y];
 			if (piece != null && piece.isWhite != isWhiteTurn)
 			{
 				chessPiecesActive.Remove(piece.gameObject);
 				Destroy(piece.gameObject);
+				chessNotation += "x";
 			}
 
 			//en passant
@@ -259,35 +267,82 @@ public class ChessBoardManager : MonoBehaviour
 			selectedPiece.SetInitialMoveDone();
 			Pieces[x, y] = selectedPiece;
 
+
+			int?[,] piecesTemp = new int?[8, 8];
+			for (int k = 0; k < piecesTemp.GetLength(0); k++)
+			{
+				for (int m = 0; m < piecesTemp.GetLength(1); m++)
+				{				
+					var temp = Pieces[k, m]?.Id;
+					piecesTemp[k, m] = temp;
+				}
+			}
+			positionsList.Add(piecesTemp);
+			bool threeFold = CheckThreeFoldRepetition(positionsList);
+
+			string targetPos = MapPositionToChessPosition(x, y);
+			chessNotation += targetPos.ToString().ToLower();
+
+			numberOfMoves++;
+
+			//check draw
+			if(OnlyKingsOnTheBoard(chessPiecesActive) || SideCannotMoveAnywhere() || threeFold)
+			{
+				StartCoroutine(MoveReaderCustom.ReadDraw(MoveInSpeech, MapPositionToChessPosition(x, y),"draw"));
+				EndGamePopUp("Game draw");
+				EndGameByDraw();
+				chessNotation = "";
+
+				isDraw = true;
+				var kingObject = gameObject.GetComponent<King>();
+				var kingA = kingObject.GetKingPosition();
+				var kingB = kingObject.GetOppositeKingPosition();
+				BoardAddons.Instance.ShowDraw(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2);
+
+			}
+
 			isCheck = false;
+			if(!isDraw)
+				BoardAddons.Instance.HideCheck(marking);
 
 			//castle king & queen side
 			if (KingMove == -2 && selectedPiece.GetType() == typeof(King))
 			{
+				chessNotation = chessNotation.Remove(chessNotation.Length - 4);
+				chessNotation += "O-O";
+
 				chessPiecesActive.Remove(Pieces[x + 1, y].gameObject);
+				var t = Pieces[x + 1, y].Id;
 				Destroy(Pieces[x + 1, y].gameObject);
 				if (isWhiteTurn)
 				{
-					SpawnChessPiece(3, x - 1, y, "White Rook");
+					SpawnChessPiece(3, x - 1, y, "White Rook",t);
 				}
 				else
 				{
-					SpawnChessPiece(9, x - 1, y, "Dark Rook");
+					SpawnChessPiece(9, x - 1, y, "Dark Rook",t);
 				}
 
+				isCastle = true;
 			}
 			else if (KingMove == 2 && selectedPiece.GetType() == typeof(King))
 			{
+				chessNotation = chessNotation.Remove(chessNotation.Length - 4);
+				chessNotation += "O-O-O";
+
 				chessPiecesActive.Remove(Pieces[x - 2, y].gameObject);
+				var t = Pieces[x - 2, y].Id;
 				Destroy(Pieces[x - 2, y].gameObject);
 				if (isWhiteTurn)
 				{
-					SpawnChessPiece(3, x + 1, y, "White Rook");
+					SpawnChessPiece(3, x + 1, y, "White Rook",t);
 				}
 				else
 				{
-					SpawnChessPiece(9, x + 1, y, "Dark Rook");
+					SpawnChessPiece(9, x + 1, y, "Dark Rook",t);
 				}
+
+				isCastle = true;
 			}
 
 			if ((y == 7 || y == 0) && selectedPiece.GetType() == typeof(Pawn))
@@ -295,8 +350,8 @@ public class ChessBoardManager : MonoBehaviour
 				HandlePromotion(x, y);
 			}
 
-				//check scan
-				foreach (ChessPiece afterMove in Pieces)
+			//check scan
+			foreach (ChessPiece afterMove in Pieces)
 				{
 					doNotPerformCheckScanForEnPassant = true;
 					if (afterMove != null && afterMove.isWhite == isWhiteTurn)
@@ -314,27 +369,33 @@ public class ChessBoardManager : MonoBehaviour
 										Debug.Log("CHECK STATE");
 										checkingPiece = afterMove;
 										isCheck = true;
+										chessNotation += "+";
+
+										BoardAddons.Instance.ShowCheck(marking, row, col);
 									}
 								}
 							}
 						}
 					}
 				}
-				doNotPerformCheckScanForEnPassant = false;
+			doNotPerformCheckScanForEnPassant = false;
 
-				//turn change
-				BoardAddons.Instance.ChangeTurnCubeColor(isWhiteTurn, cube);
-				CheckIncrement(isWhiteTurn);
-				isWhiteTurn = !isWhiteTurn;
+			//turn change
+			BoardAddons.Instance.ChangeTurnCubeColor(isWhiteTurn, cube);
+			CheckIncrement(isWhiteTurn);
+			isWhiteTurn = !isWhiteTurn;
 		}
 
 		BoardAddons.Instance.HideHighlights();
 		selectedPiece = null;
 		if(isCheck)
 		{
+			check = "check";
+
 			int savedX = 0;
 			int savedY = 0;
 			bool handle = false;
+
 			foreach(ChessPiece checkPiece in Pieces) // for each piece
 			{
 				if (checkPiece != null && checkPiece.isWhite == isWhiteTurn) // for each piece of color being under check
@@ -362,7 +423,7 @@ public class ChessBoardManager : MonoBehaviour
 										if (allowedMovesAfterMove[row, col] == true) 
 										{
 											var p = Pieces[row, col];
-											if (p != null && p.GetType() == typeof(King) && p.isWhite == isWhiteTurn) // if it hits a piece and the piece is a king
+											if (p != null && p.GetType() == typeof(King) && p.isWhite == isWhiteTurn) // if it hits a piece and the piece is a king (check)
 											{
 												figureUnableToProtect = true; // such move can not be used for protection 
 											}
@@ -455,22 +516,51 @@ public class ChessBoardManager : MonoBehaviour
 				//game over conditions - check, king cannot move anywhere and no piece to protect
 				if(!kingObject.SimulateKingMove())
 				{
-					Debug.Log("GAME OVER - CHECKMATE" + !isWhiteTurn + "wins");
+
+					chessNotation = chessNotation.Remove(chessNotation.Length - 1);
+					chessNotation += "#";
+					var kingA = kingObject.GetKingPosition();
+					var kingB = kingObject.GetOppositeKingPosition();
 					EndGamePopUp(CheckWinner(!isWhiteTurn));
+					isMate = true;
+					if (isWhiteTurn)
+					{
+						mate = "mateWhite";
+						BoardAddons.Instance.ShowMate(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2);
+					}
+					else
+					{
+						mate = "mateBlack";
+						BoardAddons.Instance.ShowMate(marking, kingB.Item1, kingB.Item2, additionalMarking, kingA.Item1, kingA.Item2);
+					}
 				}
 			}
 		}
-	}
 
-	//
-	private bool isPromotionMove(int posY, ChessPiece piece)
-	{
-		if ((posY == 7 || posY == 0) && piece.GetType() == typeof(Pawn))
+		if (isCheck)
 		{
-			return true;
+			if (isMate)
+			{
+				StartCoroutine(MoveReaderCustom.ReadMate(MoveInSpeech, MapPositionToChessPosition(x, y), mate));
+			}
+			else
+			{
+				StartCoroutine(MoveReaderCustom.ReadCheck(MoveInSpeech, MapPositionToChessPosition(x, y), check));
+			}
+		}
+		else if(isCastle)
+		{
+			StartCoroutine(MoveReaderCustom.ReadCastle(MoveInSpeech, MapPositionToChessPosition(x, y),"castle"));
+			isCastle = false;
+		}
+		else
+		{
+			if(allowedMoves[x,y] == true)
+				StartCoroutine(MoveReaderCustom.ReadMove(MoveInSpeech, MapPositionToChessPosition(x, y)));
 		}
 
-		return false;
+		chessNotation += "\n";
+
 	}
 
 	private void HandlePromotion(int xPos, int yPos)
@@ -478,29 +568,17 @@ public class ChessBoardManager : MonoBehaviour
 		XLocation = xPos;
 		YLocation = yPos;
 		chessPiecesActive.Remove(Pieces[xPos, yPos].gameObject);
+		var t = Pieces[xPos, yPos].Id;
 		Destroy(Pieces[xPos, yPos].gameObject);
 		if (isWhiteTurn)
 		{
-			//popUpWindowForWhitePromotion.SetActive(true);
-			//StartCoroutine(WaitUntilOptionIsSelected());
-			SpawnChessPiece(4, xPos, yPos, "WhiteQueen");
+			SpawnChessPiece(4, xPos, yPos, "WhiteQueen",t);
 		}
 		else
 		{
-			//popUpWindowForBlackPromotion.SetActive(true);
+			SpawnChessPiece(10, xPos, yPos, "DarkQueen",t);
 		}
 	}
-
-	//IEnumerator WaitUntilOptionIsSelected()
-	//{
-	//	var waitForButton = new WaitForUIButtons(yesButton, noButton);
-
-	//	Debug.Log("START OF THE COROUTINE");
-	//	yield return new WaitWhile(() => popUpWindowForWhitePromotion.activeInHierarchy == false);
-	//	Debug.Log("ESASSSSSSSSSSSSSS");
-		
-
-	//}
 
 	private void CheckIncrement(bool isWhiteMoving)
 	{
@@ -528,19 +606,44 @@ public class ChessBoardManager : MonoBehaviour
 		Time.timeScale = 0;
 	}
 
+	public void EndGameByDraw()
+	{
+		DateTime now = DateTime.Now;
+		string whitePlayer = GameOptionsManager.playerWhiteName;
+		string darkPlayer = GameOptionsManager.playerBlackName;
+		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName))
+			whitePlayer = "White color";
+		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName))
+			darkPlayer = "Dark color";
+		manager.AddScore(new Score("1", whitePlayer +" - "+ darkPlayer, "1/2 - 1/2 (draw)", now.ToString("MM/dd/yyyy H:mm"),numberOfMoves,chessNotation));
+		numberOfMoves = 0;
+
+	}
+
 	public string CheckWinner(bool turn)
 	{
-		string result = "Game over, checkmate. ";
+		string result = "Checkmate. ";
 		DateTime now = DateTime.Now;
+
+		string whitePlayer = GameOptionsManager.playerWhiteName;
+		string darkPlayer = GameOptionsManager.playerBlackName;
+		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName))
+			whitePlayer = "White color";
+		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName))
+			darkPlayer = "Dark color";
+
 		if (turn)
-		{
-			result += GameOptionsManager.playerWhiteName + " won!";
-			manager.AddScore(new Score("1", GameOptionsManager.playerWhiteName, GameOptionsManager.playerBlackName, now.ToString("MM/dd/yyyy H:mm")));
+		{				
+			result += whitePlayer + " won!";
+			manager.AddScore(new Score("1", whitePlayer, darkPlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves,chessNotation));
+			numberOfMoves = 0;
+
 		}
 		else
 		{
-			result += GameOptionsManager.playerBlackName + " won!";
-			manager.AddScore(new Score("1", GameOptionsManager.playerBlackName, GameOptionsManager.playerWhiteName, now.ToString("MM/dd/yyyy H:mm")));
+			result += darkPlayer + " won!";
+			manager.AddScore(new Score("1", GameOptionsManager.playerBlackName, whitePlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves, chessNotation));
+			numberOfMoves = 0;
 
 		}
 		return result;
@@ -609,24 +712,82 @@ public class ChessBoardManager : MonoBehaviour
 		return false;
 	}
 
-	private bool CheckIfAnyMovePossible(bool turn)
+	private bool OnlyKingsOnTheBoard(List<GameObject> figures)
+	{
+		if (figures.Count == 2) // kings cannot be captured
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private bool SideCannotMoveAnywhere()
 	{
 		foreach(ChessPiece piece in Pieces)
 		{
-			if(piece.isWhite == isWhiteTurn)
+			if(piece != null && piece.isWhite != isWhiteTurn)
 			{
+				var temp = piece.IsLegalMove();
+				if(piece.GetType() == typeof(King))
+				{
+					var kingObject = gameObject.GetComponent<King>();
+					var kingPos = kingObject.GetOppositeKingPosition();
+					var filtered = kingObject.FilterMovesForDraw(temp, kingPos.Item1, kingPos.Item2);
+					temp = filtered;
+				}
 
+				for(int i = 0; i<8; i++)
+				{
+					for(int j = 0; j<8; j++)
+					{
+						if (temp[i, j] == true)
+							return false;
+					}
+				}
 			}
 		}
-		//
-		//
-		//
-		
-
 		return true;
 	}
 
-	private void MapPositionToChessPosition(int x, int y)
+	private bool CheckThreeFoldRepetition(List<int?[,]> positionList)
+	{
+		for (int i = 0; i < positionList.Count(); i++)
+		{
+			var curr = positionList.ElementAt(i);
+			int counter = 0;
+			bool equal = true;
+
+			for (int j = 0; j < positionList.Count(); j++)
+			{
+				var contr = positionList.ElementAt(j);
+				equal = true;
+				if (i != j)
+				{
+					equal = Enumerable.Range(0, curr.Rank).All(dimension => curr.GetLength(dimension) == contr.GetLength(dimension)) &&
+							curr.Cast<int?>().SequenceEqual(contr.Cast<int?>());
+
+					if (equal == true)
+					{
+						Debug.Log(contr);
+						Debug.Log(curr);
+						Debug.Log("Counter + 1  " + counter);
+						counter++;
+					}
+					if (counter == 2)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+
+	//
+
+	private string MapPositionToChessPosition(int x, int y)
 	{
 		var o = PreparePositionDictionary();
 		string val;
@@ -635,6 +796,7 @@ public class ChessBoardManager : MonoBehaviour
 		{
 			Debug.Log(val);
 		}
+		return val;
 	}
 
 	public Dictionary<string, string> PreparePositionDictionary()
@@ -749,48 +911,51 @@ public class ChessBoardManager : MonoBehaviour
 	 */
 	private void SpawnAllChessPieces()
 	{
+		int counterId = 0;
+
 		chessPiecesActive = new List<GameObject>();
 		Pieces = new ChessPiece[TilesX, TilesY];
 
 		for(int i=0; i<TilesX; i++)
 		{
-			SpawnChessPiece(0, i, 1,"White Pawn");
-			SpawnChessPiece(6, i, 6,"Dark Pawn");
+			SpawnChessPiece(0, i, 1,"White Pawn",counterId++);
+			SpawnChessPiece(6, i, 6,"Dark Pawn", counterId++);
 		}
 
-		SpawnChessPiece(1, 2, 0,"White Bishop");
-		SpawnChessPiece(1, 5, 0,"White Bishop");
-		SpawnChessPiece(7, 2, 7,"Dark Bishop");
-		SpawnChessPiece(7, 5, 7,"Dark Bishop");
+		SpawnChessPiece(1, 2, 0,"White Bishop", counterId++);
+		SpawnChessPiece(1, 5, 0,"White Bishop", counterId++);
+		SpawnChessPiece(7, 2, 7,"Dark Bishop", counterId++);
+		SpawnChessPiece(7, 5, 7,"Dark Bishop", counterId++);
 
-		SpawnChessPiece(2, 1, 0,"White Knight");
-		SpawnChessPiece(2, 6, 0,"White Knight");
-		SpawnChessPiece(8, 1, 7,"Dark Knight");
-		SpawnChessPiece(8, 6, 7,"Dark Knight");
+		SpawnChessPiece(2, 1, 0,"White Knight", counterId++);
+		SpawnChessPiece(2, 6, 0,"White Knight", counterId++);
+		SpawnChessPiece(8, 1, 7,"Dark Knight", counterId++);
+		SpawnChessPiece(8, 6, 7,"Dark Knight", counterId++);
 
-		SpawnChessPiece(3, 0, 0,"White Rook");
-		SpawnChessPiece(3, 7, 0,"White Rook");
-		SpawnChessPiece(9, 0, 7,"Dark Rook");
-		SpawnChessPiece(9, 7, 7,"Dark Rook");
+		SpawnChessPiece(3, 0, 0,"White Rook", counterId++);
+		SpawnChessPiece(3, 7, 0,"White Rook", counterId++);
+		SpawnChessPiece(9, 0, 7,"Dark Rook", counterId++);
+		SpawnChessPiece(9, 7, 7,"Dark Rook", counterId++);
 
-		SpawnChessPiece(4, 3, 0,"White Queen");
-		SpawnChessPiece(5, 4, 0,"White King");
+		SpawnChessPiece(4, 3, 0,"White Queen", counterId++);
+		SpawnChessPiece(5, 4, 0,"White King", counterId++);
 
-		SpawnChessPiece(10, 3, 7,"Dark Queen");
-		SpawnChessPiece(11, 4, 7,"Dark King");
+		SpawnChessPiece(10, 3, 7,"Dark Queen", counterId++);
+		SpawnChessPiece(11, 4, 7,"Dark King", counterId++);
 
 	}
 
 	/*
 	 * Spawn single chess piece
 	 */
-	public void SpawnChessPiece(int index,int x, int y, string name)
+	public void SpawnChessPiece(int index,int x, int y, string name, int id)
 	{
 		var inst = Instantiate(chessPiecesPrefabs[index], GetTileCenter(x,y), PieceRotation) as GameObject;
 		inst.transform.SetParent(transform);
 		Pieces[x, y] = inst.GetComponent<ChessPiece>();
 		Pieces[x, y].SetPosition(x, y);
 		Pieces[x, y].name = name;
+		Pieces[x, y].Id = id;
 		chessPiecesActive.Add(inst);
 	}
 

@@ -9,4 +9,6 @@ public class RowHelper : MonoBehaviour
 	public Text Winner;
 	public Text Lost;
 	public Text DateGame;
+	public Text numberOfMoves;
+	public Text gameCourse;
 }

@@ -6,6 +6,9 @@ using UnityEngine;
 public abstract class ChessPiece : MonoBehaviour
 {
 	#region fields
+
+	public int Id { get; set; }
+
 	public int PositionX { get; set; }
 	public int PositionY { get; set; }
 
@@ -20,6 +23,18 @@ public abstract class ChessPiece : MonoBehaviour
 
 	#endregion
 
+	protected void SetValues(ChessPiece piece)
+	{
+		PositionX = piece.PositionX;
+		PositionY = piece.PositionY;
+		isWhite = piece.isWhite;
+		isEnPassantEnabledRight = piece.isEnPassantEnabledRight;
+		isEnPassantEnabledLeft = piece.isEnPassantEnabledLeft;
+		isInitialMoveDone = piece.isInitialMoveDone;
+		isPossibleToMoveInCheck = piece.isPossibleToMoveInCheck;
+		kingCapture = piece.kingCapture;
+	}
+
 	public ChessPiece()
 	{
 		isEnPassantEnabledRight = false;
@@ -29,6 +44,20 @@ public abstract class ChessPiece : MonoBehaviour
 
 		kingCapture = new bool[8, 8];
 	}
+
+	protected ChessPiece(ChessPiece piece)
+	{
+		PositionX = piece.PositionX;
+		PositionY = piece.PositionY;
+		isWhite = piece.isWhite;
+		isEnPassantEnabledRight = piece.isEnPassantEnabledRight;
+		isEnPassantEnabledLeft = piece.isEnPassantEnabledLeft;
+		isInitialMoveDone = piece.isInitialMoveDone;
+		isPossibleToMoveInCheck = piece.isPossibleToMoveInCheck;
+		kingCapture = piece.kingCapture;
+	}
+
+	public abstract ChessPiece Clone();
 
 	public void SetPosition(int x, int y)
 	{

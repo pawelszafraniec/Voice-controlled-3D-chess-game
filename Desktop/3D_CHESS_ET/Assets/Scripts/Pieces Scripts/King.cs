@@ -5,6 +5,22 @@ using UnityEngine;
 
 public class King : ChessPiece
 {
+	public King() : base()
+	{
+
+	}
+	
+	protected King(King k) : base(k)
+	{
+
+	}
+
+	public override ChessPiece Clone()
+	{
+		var piece = gameObject.AddComponent<King>();
+		piece.SetValues(this);
+		return piece;
+	}
 
 	public override bool[,] IsLegalMove()
 	{
@@ -13,8 +29,6 @@ public class King : ChessPiece
 		ChessPiece piece;
 		int i;
 		int j;
-
-		//upewnic sie ze komentarze mozna usunac
 
 		//top
 		i = PositionX - 1;
@@ -95,7 +109,6 @@ public class King : ChessPiece
 			}
 		}
 
-		//castle right
 		if (isInitialMoveDone == false)
 		{
 			piece = ChessBoardManager.Instance.Pieces[PositionX + 3, PositionY];
@@ -116,8 +129,6 @@ public class King : ChessPiece
 					move[PositionX - 2, PositionY] = true;
 			}
 		}
-
-
 
 		return move;
 	}
@@ -201,18 +212,18 @@ public class King : ChessPiece
 		bool[,] forbiddenMoves;
 		bool[,] protectedMoves;
 
-		foreach (ChessPiece p in ChessBoardManager.Instance.Pieces)// king forbidden moves because of the capture on them
+		foreach (ChessPiece p in ChessBoardManager.Instance.Pieces)// king forbidden moves because of the capture on him
 		{
-			if (p != null && p.isWhite != ChessBoardManager.Instance.isWhiteTurn)
+			if (p != null && p.isWhite != ChessBoardManager.Instance.isWhiteTurn) // for every piece of opposite side
 			{
-				forbiddenMoves = p.IsLegalMove();
-				protectedMoves = p.IsPieceDefended();
+				forbiddenMoves = p.IsLegalMove(); // possible moves
+				protectedMoves = p.IsPieceDefended(); // pieces protected - cannot be captured then
 
 				for (int i = 0; i < 8; i++)
 				{
 					for (int j = 0; j < 8; j++)
 					{
-						if (p.GetType() == typeof(Pawn))
+						if (p.GetType() == typeof(Pawn)) // for pawns' captures
 						{
 							if (p.kingCapture[i, j] == true && filtererd[i, j] == true)
 							{
@@ -223,7 +234,67 @@ public class King : ChessPiece
 								filtererd[i, j] = false;
 							}
 						}
-						else
+						else // other pieces all possible moves
+						{
+							if (forbiddenMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (protectedMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (ChessBoardManager.Instance.Pieces[x, y].isInitialMoveDone == false && filtererd[x + 1, j] == false)
+							{
+								if (filtererd[x + 1, j] == false)
+								{
+									filtererd[x + 2, j] = false;
+								}
+								if (filtererd[x - 1, j] == false || filtererd[x - 2, j] == false)
+								{
+									filtererd[x - 2, j] = false;
+								}
+							}
+						}
+					}
+
+				}
+			}
+
+		}
+
+		return filtererd;
+
+	}
+	public bool[,] FilterMovesForDraw(bool[,] allowedByCore, int x, int y)
+	{
+		bool[,] filtererd = allowedByCore;
+		bool[,] forbiddenMoves;
+		bool[,] protectedMoves;
+
+		foreach (ChessPiece p in ChessBoardManager.Instance.Pieces)// king forbidden moves because of the capture on him
+		{
+			if (p != null && p.isWhite == ChessBoardManager.Instance.isWhiteTurn) // for every piece of opposite side
+			{
+				forbiddenMoves = p.IsLegalMove(); // possible moves
+				protectedMoves = p.IsPieceDefended(); // pieces protected - cannot be captured then
+
+				for (int i = 0; i < 8; i++)
+				{
+					for (int j = 0; j < 8; j++)
+					{
+						if (p.GetType() == typeof(Pawn)) // for pawns' captures
+						{
+							if (p.kingCapture[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+							if (protectedMoves[i, j] == true && filtererd[i, j] == true)
+							{
+								filtererd[i, j] = false;
+							}
+						}
+						else // other pieces all possible moves
 						{
 							if (forbiddenMoves[i, j] == true && filtererd[i, j] == true)
 							{
@@ -256,7 +327,7 @@ public class King : ChessPiece
 
 	}
 
-	public Tuple<int,int> GetKingPosition()
+	public Tuple<int,int> GetKingPosition() // king position for color which is moving
 	{
 		int x = -1;
 		int y = -1;
@@ -266,6 +337,24 @@ public class King : ChessPiece
 			if(piece != null && piece.isWhite == ChessBoardManager.Instance.isWhiteTurn)
 			{
 				if(piece.GetType() == typeof(King))
+				{
+					x = piece.PositionX;
+					y = piece.PositionY;
+				}
+			}
+		}
+		return Tuple.Create(x, y);
+	}
+	public Tuple<int, int> GetOppositeKingPosition() // king position for opposite color
+	{
+		int x = -1;
+		int y = -1;
+
+		foreach (ChessPiece piece in ChessBoardManager.Instance.Pieces)
+		{
+			if (piece != null && piece.isWhite != ChessBoardManager.Instance.isWhiteTurn)
+			{
+				if (piece.GetType() == typeof(King))
 				{
 					x = piece.PositionX;
 					y = piece.PositionY;

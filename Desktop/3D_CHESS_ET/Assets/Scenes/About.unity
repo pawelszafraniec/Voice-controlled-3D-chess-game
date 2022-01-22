@@ -889,6 +889,9 @@ MonoBehaviour:
   ScoreBoardScene: 
   ExitConfirmationDialog: {fileID: 0}
   EndGamePopup: {fileID: 0}
+  customSettings: {fileID: 0}
+  Customtime: {fileID: 0}
+  CustomInc: {fileID: 0}
 --- !u!4 &2003059507
 Transform:
   m_ObjectHideFlags: 0
@@ -939,7 +942,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 668, y: 26}
+  m_AnchoredPosition: {x: 690, y: 0}
   m_SizeDelta: {x: 39.187317, y: 811.3845}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2011962218
@@ -984,8 +987,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1544555775}
   m_HandleRect: {fileID: 1544555774}
   m_Direction: 2
-  m_Value: 0.92111844
-  m_Size: 0.56034094
+  m_Value: 0.99995536
+  m_Size: 0.6487839
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1062,8 +1065,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -25, y: -21.8}
-  m_SizeDelta: {x: 100, y: 880.694}
+  m_AnchoredPosition: {x: -25, y: -2.0733}
+  m_SizeDelta: {x: 100, y: 964.3506}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2070401065
 MonoBehaviour:
@@ -1131,8 +1134,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -148.5, y: 0}
-  m_SizeDelta: {x: -627.41797, y: -119.79108}
+  m_AnchoredPosition: {x: -148.49994, y: -4.0999756}
+  m_SizeDelta: {x: -627.41797, y: -111.50281}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2071942337
 MonoBehaviour:
@@ -1160,7 +1163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1218,8 +1221,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 10.6, y: -291}
-  m_SizeDelta: {x: 1217.5818, y: 1571.7109}
+  m_AnchoredPosition: {x: 24, y: -261}
+  m_SizeDelta: {x: 1217.5818, y: 1486.3972}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2095678938
 MonoBehaviour:
@@ -1234,14 +1237,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.09433961, g: 0.088554636, b: 0.088554636, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: c9f6d0e7bc8541498c9a4799ba184ede, type: 3}
+    m_Font: {fileID: 12800000, guid: 4beb055f07aaff244873dec698d0363e, type: 3}
     m_FontSize: 30
     m_FontStyle: 0
     m_BestFit: 0
@@ -1254,26 +1257,25 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "VOICE-CONTROLLED 3D CHESS GAME\nCREATED BY: PAWEL SZAFRANIEC\nENGINEERING
-    THESIS 2021\n\n************************************\n\nBrief thesis description:\n>
-    The thesis examines the implementation of a desktop game that allows two people
-    to\r\nplay chess using voice commands. It was made in response to the worldwide
-    popularity of\r\nchess and the lack of a publicly available application that
-    allows you to play it with the voice.\r\nIt's designed to be a solution that
-    improves the game's comfort for two people, while also\r\nallowing those who
-    can't use the controller for this reason, such as those with disabilities.\r\nThe
-    voice system is in charge of accurately recognizing and executing the player's\r\nmovements.
-    The application considers all of the figures' and states' behavior as defined
-    in\r\nthe game's rules. The design of the application assumes a minimalist an
-    aesthetic approach\r\nto make it as easy to use as possible.\n\n************************************\n\nBrief
-    rules description:\n> Game is purposed for 2 people\n> Players move alternately\n>
-    Voice command structure is: CURRENT_POSITION TARGET_POSITION, e.g. A1A7\n> Mouse
-    control is not disabled during the gameplay\n> Special voice commands:\n\t- QUIT
-    - quit the game\n\t- Castle king - castle king side (if possible)\n\t- Castle
-    queen - castle queen side (if possible)\n> Voice commands cover all possible
-    moves and validate them, so that user can't perform a move that is not allowed
-    in current position\n> All standard moves/states/consequences are covered \n>
-    Game ends if any of ending state is fullfilled. Those are:\n\t- Checkmate\n\t-
-    Timeout\n\t- Draw\n\n"
+    THESIS PROJECT\n2021\n\n\t***\n\nAbout game:\nThe game allows two people to play
+    chess by voice. Implemented voice module can be treated as a supplement or a
+    separate form of controlling figures in the game. Additionally, the game has
+    a module that reads and displays moves, which in combination with the aforementioned
+    voice module allows people who, for various reasons, e.g. disabilities, cannot
+    play the game using a controller.\nThe game implements all the chess mechanics
+    and moves described in the official chess rules, offers different time formats,
+    saves completed games and the whole game has a neat and intuitive user interface.\n\n\t***\n\nImportant
+    rules:\n> pieces during the game can be controlled by voice or controller depending
+    on the preference\n> in order to use voice commands, marking for this module
+    placed in right-bottom corner must be green\n> in order to use  module reading
+    moves, the marking in top-left corner must be green\n> markings are interactable,
+    and in case of problems, modules can be restarted any time during the game\n>
+    camera rotation option switches the camera view depending on which player is
+    moving in current state of the game and the option is available to set only in
+    Game rules screen\n> game-ending conditions:\n\t- game exit\n\t- checkmate\n\t-
+    timeout\n\t- draw\n> the course of the game can be downloaded in PGN format after
+    the game is finished. It can be done in Scoreboard screen.\n> Game in PGN format
+    can be recreated in e.g. chess.com analysis tool just by copy-pasting it\n\n\n"
 --- !u!222 &2095678939
 CanvasRenderer:
   m_ObjectHideFlags: 0

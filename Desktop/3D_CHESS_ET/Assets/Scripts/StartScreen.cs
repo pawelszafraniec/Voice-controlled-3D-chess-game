@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class StartScreen : MonoBehaviour
@@ -12,6 +13,9 @@ public class StartScreen : MonoBehaviour
 
 	public GameObject ExitConfirmationDialog;
 	public GameObject EndGamePopup;
+	public GameObject customSettings;
+	public InputField Customtime;
+	public InputField CustomInc;
 
 	public void ShowExitConfirmationDialog()
 	{
@@ -44,8 +48,8 @@ public class StartScreen : MonoBehaviour
 	public void LoadStartScene()
 	{
 		SceneManager.LoadScene("StartScreen");
+		ChessBoardManager.Instance.numberOfMoves = 0;
 	}
-
 
 	public void DoNotExitGame()
 	{
@@ -57,5 +61,24 @@ public class StartScreen : MonoBehaviour
 		EndGamePopup.SetActive(false);
 		Timer.Instance.timerIsRunningWhite = false;
 		Timer.Instance.timerIsRunningBlack = false;
+	}
+
+	public void StartGameOnCondition()
+	{
+		if(customSettings.activeInHierarchy)
+		{
+			if(Customtime.text == string.Empty)
+			{
+				Customtime.image.color = Color.red;
+			}
+			else
+			{
+				LoadGameScene();
+			}
+		}
+		else
+		{
+			LoadGameScene();
+		}
 	}
 }

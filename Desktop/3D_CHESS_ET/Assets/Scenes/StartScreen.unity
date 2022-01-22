@@ -237,6 +237,10 @@ MonoBehaviour:
   AboutScene: 
   ScoreBoardScene: 
   ExitConfirmationDialog: {fileID: 0}
+  EndGamePopup: {fileID: 0}
+  customSettings: {fileID: 0}
+  Customtime: {fileID: 0}
+  CustomInc: {fileID: 0}
 --- !u!4 &63972156
 Transform:
   m_ObjectHideFlags: 0
@@ -857,6 +861,10 @@ MonoBehaviour:
   AboutScene: About
   ScoreBoardScene: Scoreboard
   ExitConfirmationDialog: {fileID: 323889865}
+  EndGamePopup: {fileID: 0}
+  customSettings: {fileID: 0}
+  Customtime: {fileID: 0}
+  CustomInc: {fileID: 0}
 --- !u!4 &1081623742
 Transform:
   m_ObjectHideFlags: 0
@@ -2007,13 +2015,13 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 93368250
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 100
-  m_fontSizeBase: 100
+  m_fontSize: 90
+  m_fontSizeBase: 90
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
