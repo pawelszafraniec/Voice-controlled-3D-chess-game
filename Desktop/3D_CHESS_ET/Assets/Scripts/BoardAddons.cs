@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Class supporting the gameplay with addon functions
+ */
 public class BoardAddons : MonoBehaviour
 {
 	#region fields
@@ -16,21 +19,31 @@ public class BoardAddons : MonoBehaviour
 	private List<GameObject> prefabs;
 
 	#endregion
+	
+	/**
+	 * START method - runs when script is being enabled
+	 */
 	private void Start()
 	{
 		Instance = this;
 		prefabs = new List<GameObject>();
 	}
 
+	/**
+	 * Method showing check marking
+	 */
 	public void ShowCheck(GameObject marking, int x, int y)
 	{
 
 		marking.SetActive(true);
-		marking.transform.position = new Vector3(x + 0.25f, 1, y);
-		marking.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+		marking.transform.position = new Vector3(x + 0.25f, 1, y); // set position
+		marking.GetComponent<Renderer>().material.SetColor("_Color", Color.blue); // set color
 
 	}
-
+	
+	/**
+	 * Method showing checkmate markings
+	 */
 	public void ShowMate(GameObject markingWinning, int winningKingX, int winningKingY, GameObject markingLoosing, int loosingKingX, int loosingKingY)
 	{
 		markingWinning.SetActive(true);
@@ -40,16 +53,21 @@ public class BoardAddons : MonoBehaviour
 
 		if(ChessBoardManager.Instance.isWhiteTurn)
 		{
+			// set colors
 			markingWinning.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
 			markingLoosing.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
 		}
 		else
 		{
+			// set colors
 			markingWinning.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
 			markingLoosing.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
 		}
 	}
 
+	/**
+	 * Method showing draw markings
+	 */
 	public void ShowDraw(GameObject mark1, int kingAX, int kingAY, GameObject mark2, int kingBX, int kingBY)
 	{
 		mark1.SetActive(true);
@@ -61,11 +79,17 @@ public class BoardAddons : MonoBehaviour
 		mark2.GetComponent<Renderer>().material.SetColor("_Color", Color.grey);
 	}
 
+	/**
+	 * Method hiding check marking
+	 */
 	public void HideCheck(GameObject marking)
 	{
 		marking.SetActive(false);
 	}
 
+	/**
+	 * Method highlighting piece
+	 */
 	private GameObject HighlightPiece()
 	{
 		GameObject o = prefabs.Find(g => !g.activeSelf);
@@ -78,6 +102,9 @@ public class BoardAddons : MonoBehaviour
 		return o;
 	}
 
+	/**
+	 * Method highlighting allowed moves for a piece
+	 */
 	public void HighlightAllowedMoves(bool[,] moves)
 	{
 		for(int i=0; i<8; i++)
@@ -94,6 +121,9 @@ public class BoardAddons : MonoBehaviour
 		}
 	}
 
+	/**
+	 * Method hiding highlights for a piece
+	 */
 	public void HideHighlights()
 	{
 		foreach(GameObject go in prefabs)
@@ -102,6 +132,9 @@ public class BoardAddons : MonoBehaviour
 		}
 	}
 
+	/**
+	 * Method changing color of cube indicating turns
+	 */
 	public void ChangeTurnCubeColor(bool condition, GameObject gameObject)
 	{
 		var render = gameObject.GetComponent<Renderer>();
@@ -115,6 +148,9 @@ public class BoardAddons : MonoBehaviour
 		}
 	}
 
+	/**
+	 * Method returning letter notation for a chess piece
+	 */
 	public string GetNotationForAPiece(string piece)
 	{
 		if(piece == "Pawn")

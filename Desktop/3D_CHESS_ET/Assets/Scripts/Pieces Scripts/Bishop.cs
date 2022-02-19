@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+/**
+ * Class handling bishop moves
+ */
 public class Bishop : ChessPiece
 {
 	public Bishop() : base()
@@ -14,6 +18,9 @@ public class Bishop : ChessPiece
 		
 	}
 
+	/**
+	 * Clone method for Bishop game object
+	 */
 	public override ChessPiece Clone()
 	{
 		var piece = gameObject.AddComponent<Bishop>();
@@ -21,6 +28,9 @@ public class Bishop : ChessPiece
 		return piece;
 	}
 
+	/**
+	 * Override method determining what pieces are defended by a bishop in given position
+	 */
 	public override bool[,] IsPieceDefended()
 	{
 		bool[,] defend = new bool[8, 8];
@@ -30,7 +40,7 @@ public class Bishop : ChessPiece
 		int i;
 		int j;
 
-		//top-left
+		//top-left diagonal
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -41,15 +51,15 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if(piece != null && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on checked position
+			if(piece != null && isWhite == piece.isWhite) // piece of the same color found
 			{ 
-				defend[i, j] = true; 
+				defend[i, j] = true; // found piece defended
 				break;
 			}
 		}
 
-		//top-right
+		//top-right diagonal
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -60,15 +70,15 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if(piece != null && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on checked position
+			if (piece != null && isWhite == piece.isWhite) // piece of the same color found
 			{
-				defend[i, j] = true;
+				defend[i, j] = true; // found piece defended
 				break;
 			}
 		}
 
-		//down-left
+		//down-left diagonal
 		i = PositionX;
 		j = PositionY;
 		while (true)
@@ -79,17 +89,17 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if( piece != null && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on checked position
+			if ( piece != null && isWhite == piece.isWhite) // piece of the same color found
 			{
-				defend[i, j] = true;
+				defend[i, j] = true; // found piece defended
 				break;
 			}
 		}
 
+		//down-right diagonal
 		i = PositionX;
 		j = PositionY;
-		//down-right
 		while (true)
 		{
 			i++;
@@ -98,10 +108,10 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if ((piece != null) && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on checked position
+			if ((piece != null) && isWhite == piece.isWhite) // piece of the same color found
 			{
-				defend[i, j] = true;
+				defend[i, j] = true; // found piece defended
 				break;
 			}
 
@@ -109,6 +119,10 @@ public class Bishop : ChessPiece
 
 		return defend;
 	}
+
+	/**
+	 * Override method determining allowed moves in given position for bishop. 
+	 */
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];
@@ -130,16 +144,16 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
-			if (piece == null)
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on given position
+			if (piece == null) // no piece found
 			{
-				move[i, j] = true;
+				move[i, j] = true; // move allowed
 			}
 			else
 			{
-				if (isWhite != piece.isWhite)
+				if (isWhite != piece.isWhite) // piece of opposite color found
 				{
-					move[i, j] = true;
+					move[i, j] = true; // move allowed
 				}
 				break;
 			}
@@ -157,16 +171,16 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on given position
 			if (piece == null)
 			{
-				move[i, j] = true;
+				move[i, j] = true; // move allowed
 			}
 			else
 			{
-				if (isWhite != piece.isWhite)
+				if (isWhite != piece.isWhite) // piece of opposite color found
 				{
-					move[i, j] = true;
+					move[i, j] = true; // move allowed
 				}
 				break;
 			}
@@ -184,16 +198,16 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on given position
 			if (piece == null)
 			{
-				move[i, j] = true;
+				move[i, j] = true; // move allowed
 			}
 			else
 			{
-				if (isWhite != piece.isWhite)
+				if (isWhite != piece.isWhite) // piece of opposite color found
 				{
-					move[i, j] = true;
+					move[i, j] = true; // move allowed
 				}
 				break;
 			}
@@ -211,16 +225,16 @@ public class Bishop : ChessPiece
 			{
 				break;
 			}
-			piece = ChessBoardManager.Instance.Pieces[i, j];
+			piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on given position
 			if (piece == null)
 			{
-				move[i, j] = true;
+				move[i, j] = true; // move allowed
 			}
 			else
 			{
-				if (isWhite != piece.isWhite)
+				if (isWhite != piece.isWhite) // piece of opposite color found
 				{
-					move[i, j] = true;
+					move[i, j] = true; // move allowed
 				}
 				break;
 			}

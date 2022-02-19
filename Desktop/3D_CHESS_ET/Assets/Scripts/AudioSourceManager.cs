@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/**
+ * Class handling reading moves system
+ */
 public class AudioSourceManager : MonoBehaviour
 {
 
@@ -18,6 +21,9 @@ public class AudioSourceManager : MonoBehaviour
 	public List<AudioClip> Additionalclips;
 	public Dictionary<String, AudioClip> AdditionalClips;
 
+	/**
+	 * Method mapping figures audio clips
+	 */
 	private void MapFiguresToString()
 	{
 		FiguresClips = new Dictionary<string, AudioClip>();
@@ -28,6 +34,10 @@ public class AudioSourceManager : MonoBehaviour
 		FiguresClips.Add("Queen", Figureclips[4]);
 		FiguresClips.Add("King", Figureclips[5]);
 	}
+
+	/**
+	 * Method mapping position audio clips
+	 */
 	private void MapPositionToString()
 	{
 		PositionClips = new Dictionary<string, AudioClip>();
@@ -104,6 +114,10 @@ public class AudioSourceManager : MonoBehaviour
 		PositionClips.Add("H7", Positionclips[62]);
 		PositionClips.Add("H8", Positionclips[63]);
 	}
+
+	/**
+	 * Method mapping remaining ("special") audio clips
+	 */
 	private void MapAdditionalClips()
 	{
 		AdditionalClips = new Dictionary<string, AudioClip>();
@@ -114,6 +128,9 @@ public class AudioSourceManager : MonoBehaviour
 		AdditionalClips.Add("castle", Additionalclips[4]);
 	}
 
+	/**
+	 * START method - runs when script is being enabled
+	 */
 	private void Start()
 	{
 		MapFiguresToString();
@@ -121,11 +138,18 @@ public class AudioSourceManager : MonoBehaviour
 		MapAdditionalClips();
 	}
 
+	/**
+	 * Method playing audio clip for a figure
+	 */
 	public void PlayFigure(string name)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[name];
 		gameObject.GetComponent<AudioSource>().Play();
 	}
+
+	/**
+	 * Method playing audio clip for a position
+	 */
 	public void PlayPosition(string name)
 	{
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[name];
@@ -133,93 +157,113 @@ public class AudioSourceManager : MonoBehaviour
 
 	}
 
+	/**
+	 * Coroutine reading move of a piece
+	 */
 	public IEnumerator ReadMove(string nameFig, string namePos)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[nameFig];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length);
+		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length); // wait until previous one is finished
 
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[namePos];
 		gameObject.GetComponent<AudioSource>().Play();
 
 	}
 
+	/**
+	 * Coroutine reading checkmate
+	 */
 	public IEnumerator ReadMate(string nameFig, string namePos, string mate)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[nameFig];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[namePos];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = AdditionalClips[mate];
 		gameObject.GetComponent<AudioSource>().Play();
 	}
 
+	/**
+	 * Corouting reading check state
+	 */
 	public IEnumerator ReadCheck(string nameFig, string namePos, string check)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[nameFig];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length);
+		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[namePos];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length);
+		yield return new WaitForSeconds(gameObject.GetComponent<AudioSource>().clip.length); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = AdditionalClips[check];
 		gameObject.GetComponent<AudioSource>().Play();
 	}
 	
+	/**
+	 * Coroutine reading draw
+	 */
 	public IEnumerator ReadDraw(string nameFig, string namePos, string draw)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[nameFig];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[namePos];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = AdditionalClips[draw];
 		gameObject.GetComponent<AudioSource>().Play();
 	}
 
+	/**
+	 * Coroutine reading castling
+	 */
 	public IEnumerator ReadCastle(string nameFig, string namePos, string castle)
 	{
 		gameObject.GetComponent<AudioSource>().clip = FiguresClips[nameFig];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = PositionClips[namePos];
 		gameObject.GetComponent<AudioSource>().Play();
 
-		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false);
+		yield return new WaitUntil(() => gameObject.GetComponent<AudioSource>().isPlaying == false); // wait until previous audio clip is finished
 
 		gameObject.GetComponent<AudioSource>().clip = AdditionalClips[castle];
 		gameObject.GetComponent<AudioSource>().Play();
 	}
 
+	/**
+	 * Method muting or enabling reading system during the game
+	 */
 	public void MuteOrEnableReadingMovesDuringGame()
 	{
-		if(controlButton.image.color == Color.red)
+		if(controlButton.image.color == Color.red) // if inactive
 		{
+			// set active
 			controlButton.image.color = Color.green;
 			gameObject.GetComponent<AudioSource>().mute = false;
 
-
+			 
 		}
-		else if (controlButton.image.color == Color.green)
+		else if (controlButton.image.color == Color.green) // if active
 		{
+			// set inactive
 			controlButton.image.color = Color.red;
 			gameObject.GetComponent<AudioSource>().mute = true;
 

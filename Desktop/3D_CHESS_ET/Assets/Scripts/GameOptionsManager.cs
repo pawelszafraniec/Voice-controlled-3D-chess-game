@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/**
+ * Class handling game options
+ */
 public class GameOptionsManager : MonoBehaviour
 {
 	public Dropdown timeDropdown;
@@ -25,18 +28,24 @@ public class GameOptionsManager : MonoBehaviour
 	public static bool VoiceReadMovesEnabled;
 	public static bool CameraRotationEnabled;
 
+	/**
+	 * UPDATE method - runs on each frame of the game
+	 */
 	public void Update()
 	{
-		timeValue = timeDropdown.options[timeDropdown.value].text;
-		playerWhiteName = PlayerWhiteName.text;
-		playerBlackName = PlayerBlackName.text;
+		timeValue = timeDropdown.options[timeDropdown.value].text; // assign time value from dropdown
+		playerWhiteName = PlayerWhiteName.text; // assign white player name from text field 
+		playerBlackName = PlayerBlackName.text; // assign dark player name from text field
 
-		VoiceReadMovesEnabled = readMovesToggle.isOn;
-		CameraRotationEnabled = cameraRotationToggle.isOn;
+		VoiceReadMovesEnabled = readMovesToggle.isOn; // read voice reading system option
+		CameraRotationEnabled = cameraRotationToggle.isOn; // read camera rotation option
 
-		SetCustomOptions();
+		SetCustomOptions(); // set custom time options
 	}
 
+	/**
+	 * Method showing additional input text field options for time
+	 */
 	public void EnableCustomOptions()
 	{
 		if(timeDropdown.options[timeDropdown.value].text == "Custom")
@@ -49,6 +58,9 @@ public class GameOptionsManager : MonoBehaviour
 		}
 	}
 
+	/**
+	 * Method setting up additional enabled time options
+	 */
 	public void SetCustomOptions()
 	{
 		if (timeDropdown.options[timeDropdown.value].text == "Custom")

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Class handling king moves
+ */
 public class King : ChessPiece
 {
 	public King() : base()
@@ -15,6 +18,9 @@ public class King : ChessPiece
 
 	}
 
+	/**
+	 * Clone method for King game object
+	 */
 	public override ChessPiece Clone()
 	{
 		var piece = gameObject.AddComponent<King>();
@@ -22,6 +28,9 @@ public class King : ChessPiece
 		return piece;
 	}
 
+	/**
+	 * Override method determining allowed moves in given position for king. 
+	 */
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];
@@ -39,14 +48,14 @@ public class King : ChessPiece
 			{
 				if (i >= 0 && i < 8)
 				{
-					piece = ChessBoardManager.Instance.Pieces[i, j];
-					if (piece == null)
+					piece = ChessBoardManager.Instance.Pieces[i, j]; // check if there is a piece on investigated position
+					if (piece == null) // no piece found
 					{
-						move[i, j] = true;
+						move[i, j] = true; // move allowed
 					}
-					else if (isWhite != piece.isWhite)
+					else if (isWhite != piece.isWhite) // piece of opposite color found
 					{
-						move[i, j] = true;
+						move[i, j] = true; // move allowed
 					}
 				}
 
@@ -64,14 +73,14 @@ public class King : ChessPiece
 				if (i >= 0 && i < 8)
 				{
 
-					piece = ChessBoardManager.Instance.Pieces[i, j];
+					piece = ChessBoardManager.Instance.Pieces[i, j];  // check if there is a piece on investigated position
 					if (piece == null)
 					{
-						move[i, j] = true;
+						move[i, j] = true; // move allowed
 					}
-					else if (isWhite != piece.isWhite)
+					else if (isWhite != piece.isWhite) // piece of opposite color found
 					{
-						move[i, j] = true;
+						move[i, j] = true; // move allowed
 					}
 				}
 
@@ -82,57 +91,60 @@ public class King : ChessPiece
 		//mid-left
 		if (PositionX != 0)
 		{
-			piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];
+			piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];  // check if there is a piece on investigated position
 			if (piece == null)
 			{
-				move[PositionX - 1, PositionY] = true;
+				move[PositionX - 1, PositionY] = true; // move allowed
 			}
-			else if (isWhite != piece.isWhite)
+			else if (isWhite != piece.isWhite) // piece of opposite color found
 			{
-				move[PositionX - 1, PositionY] = true;
+				move[PositionX - 1, PositionY] = true; // move allowed
 			}
 		}
 
 		//mid-right
 		if (PositionX != 7)
 		{
-			piece = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY];
+			piece = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY];  // check if there is a piece on investigated position
 
 			if (piece == null)
 			{
-				move[PositionX + 1, PositionY] = true;
+				move[PositionX + 1, PositionY] = true; // move allowed
 			}
-			else if (isWhite != piece.isWhite)
+			else if (isWhite != piece.isWhite) // piece of opposite color found
 			{
-				move[PositionX + 1, PositionY] = true;
+				move[PositionX + 1, PositionY] = true; // move allowed
 
 			}
 		}
 
-		if (isInitialMoveDone == false)
+		if (isInitialMoveDone == false) // castle check
 		{
 			piece = ChessBoardManager.Instance.Pieces[PositionX + 3, PositionY];
 			if (piece != null && piece.GetType() == typeof(Rook) && piece.isInitialMoveDone == false
 				&& ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY] == null
-				&& ChessBoardManager.Instance.Pieces[PositionX + 2, PositionY] == null)
+				&& ChessBoardManager.Instance.Pieces[PositionX + 2, PositionY] == null) // if king and rook are on initial square and there are no figures between them
 			{
 				if (ChessBoardManager.Instance.isCheck == false)
-					move[PositionX + 2, PositionY] = true;
+					move[PositionX + 2, PositionY] = true; // castle king side allowed
 			}
 			piece = ChessBoardManager.Instance.Pieces[PositionX - 4, PositionY];
 			if (piece != null && piece.GetType() == typeof(Rook) && piece.isInitialMoveDone == false
 				&& ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY] == null
 				&& ChessBoardManager.Instance.Pieces[PositionX - 2, PositionY] == null
-				&& ChessBoardManager.Instance.Pieces[PositionX - 3, PositionY] == null)
+				&& ChessBoardManager.Instance.Pieces[PositionX - 3, PositionY] == null)  // if king and rook are on initial square and there are no figures between them
 			{
 				if (ChessBoardManager.Instance.isCheck == false)
-					move[PositionX - 2, PositionY] = true;
+					move[PositionX - 2, PositionY] = true; // castle queen side allowed
 			}
 		}
 
 		return move;
 	}
 
+	/**
+	 * Override method determining what pieces are defended by a pawn in given position
+	 */
 	public override bool[,] IsPieceDefended()
 	{
 		bool[,] defend = new bool[8, 8];
@@ -151,8 +163,8 @@ public class King : ChessPiece
 			{
 				if (i >= 0 && i < 8)
 				{
-					piece = ChessBoardManager.Instance.Pieces[i, j];
-					if (piece != null && isWhite == piece.isWhite)
+					piece = ChessBoardManager.Instance.Pieces[i, j];  // check if there is a piece on investigated position
+					if (piece != null && isWhite == piece.isWhite) // piece of the same color found
 					{
 						defend[i, j] = true;
 					}
@@ -172,8 +184,8 @@ public class King : ChessPiece
 				if (i >= 0 && i < 8)
 				{
 
-					piece = ChessBoardManager.Instance.Pieces[i, j];
-					if (piece != null && isWhite == piece.isWhite)
+					piece = ChessBoardManager.Instance.Pieces[i, j];  // check if there is a piece on investigated position
+					if (piece != null && isWhite == piece.isWhite) // piece of the same color found
 					{
 						defend[i, j] = true;
 					}
@@ -186,8 +198,8 @@ public class King : ChessPiece
 		//mid-left
 		if (PositionX != 0)
 		{
-			piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];
-			if (piece != null && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[PositionX - 1, PositionY];  // check if there is a piece on investigated position
+			if (piece != null && isWhite == piece.isWhite) // piece of the same color found
 			{
 				defend[PositionX - 1, PositionY] = true;
 			}
@@ -196,8 +208,8 @@ public class King : ChessPiece
 		//mid-right
 		if (PositionX != 7)
 		{
-			piece = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY];
-			if (piece != null && isWhite == piece.isWhite)
+			piece = ChessBoardManager.Instance.Pieces[PositionX + 1, PositionY];  // check if there is a piece on investigated position
+			if (piece != null && isWhite == piece.isWhite) // piece of the same color found
 			{
 				defend[PositionX + 1, PositionY] = true;
 			}
@@ -206,6 +218,9 @@ public class King : ChessPiece
 		return defend;
 	}
 
+	/**
+	 * Method filtering king forbidden moves
+	 */
 	public bool[,] FilterForbiddenMoves(bool[,] allowedByCore, int x, int y)
 	{
 		bool[,] filtererd = allowedByCore;
@@ -266,6 +281,10 @@ public class King : ChessPiece
 		return filtererd;
 
 	}
+
+	/**
+	 * Method filtering moves for a draw, similar to FilterForbiddenMoves() method but for opposite turn
+	 */
 	public bool[,] FilterMovesForDraw(bool[,] allowedByCore, int x, int y)
 	{
 		bool[,] filtererd = allowedByCore;
@@ -327,6 +346,9 @@ public class King : ChessPiece
 
 	}
 
+	/**
+	 * Method returning tuple position of king of color currently moving
+	 */
 	public Tuple<int,int> GetKingPosition() // king position for color which is moving
 	{
 		int x = -1;
@@ -334,7 +356,7 @@ public class King : ChessPiece
 		
 		foreach(ChessPiece piece in ChessBoardManager.Instance.Pieces)
 		{
-			if(piece != null && piece.isWhite == ChessBoardManager.Instance.isWhiteTurn)
+			if(piece != null && piece.isWhite == ChessBoardManager.Instance.isWhiteTurn) // for each chess piece of the same color
 			{
 				if(piece.GetType() == typeof(King))
 				{
@@ -345,6 +367,10 @@ public class King : ChessPiece
 		}
 		return Tuple.Create(x, y);
 	}
+
+	/**
+	 * Method returning tuple position of king of color currently not moving 
+	 */
 	public Tuple<int, int> GetOppositeKingPosition() // king position for opposite color
 	{
 		int x = -1;
@@ -352,7 +378,7 @@ public class King : ChessPiece
 
 		foreach (ChessPiece piece in ChessBoardManager.Instance.Pieces)
 		{
-			if (piece != null && piece.isWhite != ChessBoardManager.Instance.isWhiteTurn)
+			if (piece != null && piece.isWhite != ChessBoardManager.Instance.isWhiteTurn)  // for each chess piece of the opposite color color
 			{
 				if (piece.GetType() == typeof(King))
 				{
@@ -364,6 +390,9 @@ public class King : ChessPiece
 		return Tuple.Create(x, y);
 	}
 
+	/**
+	 * Method checking possible king moves
+	 */
 	public bool SimulateKingMove()
 	{
 		var kingPos = GetKingPosition();

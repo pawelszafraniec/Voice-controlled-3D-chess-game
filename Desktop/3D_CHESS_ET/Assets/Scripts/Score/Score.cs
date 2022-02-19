@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/**
+ * Class handling creating new Score object
+ */
 [Serializable]
 public class Score
 {

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/**
+ * Class helping oragnizing game objects for scoreboard rows
+ */
 public class RowHelper : MonoBehaviour
 {
 	public Text ID;

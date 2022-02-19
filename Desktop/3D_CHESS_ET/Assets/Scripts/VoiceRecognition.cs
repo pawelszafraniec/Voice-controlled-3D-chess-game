@@ -6,6 +6,10 @@ using System.Linq;
 using UnityEngine.Windows.Speech;
 using UnityEngine.UI;
 
+
+/*
+ * Class responsible for handling controlling pieces with voice using DictationRecognizer class
+ */
 public class VoiceRecognition : MonoBehaviour
 {
 	public Image VoiceControl;
@@ -16,18 +20,16 @@ public class VoiceRecognition : MonoBehaviour
 
 	private Dictionary<string, Action> actions = new Dictionary<string, Action>();
 
-	private char[] possible_numbers = { '1', '2', '3', '4', '5', '6', '7', '8' };
-	private char[] possible_characters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+	private char[] possible_numbers = { '1', '2', '3', '4', '5', '6', '7', '8' }; // 1-8
+	private char[] possible_characters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' }; // A-H
 	
 	public Errors errors_tables;
 
-	/*
-	 * Necessary for voice activation:
-	 * -> Microphone enabled in Capablities in Player project settings
-	 * -> English language pack
-	 * -> Windows Speech recognition enabled
-	 * -> Cortana installed and enabled
-	*/
+	//In order to use voice controlling system there must be a microphone device to be used for that purpose
+	//System must be in english and phrase recognition system must be supported
+	/**
+	 * Control function checking environments conditions for handling voice recognition
+	 */
 	private bool DeviceControl()
 	{
 		foreach (var device in Microphone.devices)
@@ -39,7 +41,7 @@ public class VoiceRecognition : MonoBehaviour
 
 		if (Application.systemLanguage == SystemLanguage.English)
 		{
-			Debug.Log("This system is in English. "); // must have
+			Debug.Log("This system is in English. ");
 		}
 		else
 		{
@@ -48,43 +50,53 @@ public class VoiceRecognition : MonoBehaviour
 
 		if (PhraseRecognitionSystem.isSupported)
 		{
-			Debug.Log("Phrase Recognition is supported!"); // must have
+			Debug.Log("Phrase Recognition is supported!");
 		}
 		else
 		{
 			return false;
 		}
-		Debug.Log("Speech recognition can operate.");
 		return true;
-
 	}
 
+	/**
+	 * Restart function for Voice Recognition system
+	 */
 	public void RestartDictation()
 	{
 		DictationRecognizer.Stop();
 		DictationRecognizer.Dispose();
 		DictationRecognizer = new DictationRecognizer();
-		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;
-		DictationRecognizer.InitialSilenceTimeoutSeconds = 10f;
+		DictationRecognizer.AutoSilenceTimeoutSeconds = 20f;
+		DictationRecognizer.InitialSilenceTimeoutSeconds = 20f;
 		DictationRecognizer.DictationResult += OnRecognizeSpeech;
 		DictationRecognizer.Start();
 		Debug.Log("RESTART");
 	}
 
+	/**
+	 * START method - runs when script is being enabled
+	 */
 	public void Start()
 	{
 		Instance = this;
-		DeviceControl();
 
-		DictationRecognizer = new DictationRecognizer();
-		DictationRecognizer.AutoSilenceTimeoutSeconds = 10f;
-		DictationRecognizer.InitialSilenceTimeoutSeconds = 10f;
-		DictationRecognizer.DictationResult += OnRecognizeSpeech;
-		DictationRecognizer.Start();
+		if(DeviceControl())
+		{
+			DictationRecognizer = new DictationRecognizer();
+			DictationRecognizer.AutoSilenceTimeoutSeconds = 20f;
+			DictationRecognizer.InitialSilenceTimeoutSeconds = 20f;
+			DictationRecognizer.DictationResult += OnRecognizeSpeech;
+			DictationRecognizer.Start();
+		}
 	}
 
+	/**
+	 * UPDATE method - runs on each frame of the game
+	 */
 	public void Update()
 	{
+		// Change control for DictationRecognizer class control depending on its status
 		if (DictationRecognizer.Status.Equals(SpeechSystemStatus.Running))
 		{
 			VoiceControl.GetComponent<Image>().color = Color.green;
@@ -96,9 +108,12 @@ public class VoiceRecognition : MonoBehaviour
 
 	}
 
+	/**
+	 * DictationRecognizer method reading the speech handling moving the figure
+	 */
 	public void OnRecognizeSpeech(string speech, ConfidenceLevel level)
 	{
-		Debug.Log(speech.ToString()); //D2D5
+		// assign recognized text
 		string ab = speech.ToString();
 		if(ab.Length < 4 || ab.Length > 7)
 		{
@@ -109,70 +124,82 @@ public class VoiceRecognition : MonoBehaviour
 			ab = ab.Replace(" ", "");
 			ab = ValidateWords(ab);
 		}
+
+		//split speech string by half
 		var first = ab.Substring(0, (int)(ab.Length / 2));
 		var last = ab.Substring((int)(ab.Length / 2), (int)(ab.Length / 2));
 
-		Debug.Log(first + "TO" + last);
-
-		var startScreen = gameObject.GetComponent<StartScreen>();
-		var a = errors_tables.two_digits_errors_with_A_letter;
+		var startScreen = gameObject.GetComponent<StartScreen>(); // get StartScreen component 
 
 		if (ab == "quit" || ab == "quitgame" || ab == "exit" || ab == "exitgame")
 		{
-			ChessBoardManager.Instance.popUpExitConfirmation.SetActive(true);
+			ChessBoardManager.Instance.popUpExitConfirmation.SetActive(true); // open exit confirmation pop-up window
 		}
-		if (ChessBoardManager.Instance.popUpExitConfirmation.activeInHierarchy == true)
+		if (ChessBoardManager.Instance.popUpExitConfirmation.activeInHierarchy == true) // exit confirmation pop-up opened
 		{
-
 			if (ab == "yes")
 			{
+				//Confirm exit pop-up
 				startScreen.LoadStartScene();
 			}
 			if (ab == "no" || ab == "cancel")
 			{
+				//Cancel exit pop-up
 				startScreen.DoNotExitGame();
 			}
 		}
-		if (ChessBoardManager.Instance.popUpWindowForEndGame.activeInHierarchy == true)
+		if (ChessBoardManager.Instance.popUpWindowForEndGame.activeInHierarchy == true) // end game pop-up opened
 		{
 			if (ab == "playagain")
 			{
+				//Reset game
 				startScreen.LoadGameScene();
 				RestartDictation();
+				Time.timeScale = 1;
+
 			}
 		}
 
 		if (first.Length == 2 && last.Length == 2)
 		{
-
+			// Lisp validation
 			first = ValidateMovement(first, possible_characters, possible_numbers);
 			last = ValidateMovement(last, possible_characters, possible_numbers);
 
+			// Position dictionary for mapping spoken position to logic one, e.g. 00 -> A1
 			var positionDictionary = ChessBoardManager.Instance.PreparePositionDictionary();
+
+			// Read from the dictionary
 			string aFind = positionDictionary.FirstOrDefault(x => x.Value == first).Key;
-			Debug.Log("From:" + aFind);//
-
 			string bFind = positionDictionary.FirstOrDefault(x => x.Value == last).Key;
-			Debug.Log("To:" + bFind);//
 
+			// Get corresponding coordinates in position array
 			Tuple<int, int> helperX = StringHelper.Instance.GetBoardCoordinates(aFind);
-			Debug.Log(aFind + ", x = " + helperX.Item1 + " y = " + helperX.Item2);
-
 			Tuple<int, int> helperY = StringHelper.Instance.GetBoardCoordinates(bFind);
-			Debug.Log(bFind + ", x = " + helperY.Item1 + " y = " + helperY.Item2);
 
+			// Fill RecognizerReading text field
 			RecognizerReading.text = "From:" + first + " to:" + last;
+
+			// Execute move
 			ExecuteMovement(helperX, helperY);
 		}
 
 	}
 
+	/**
+	* ExecuteMovement function - invoke SelectChessPiece() and MoveChessPiece() methods
+	*/
 	private void ExecuteMovement(Tuple<int, int> from, Tuple<int, int> to)
 	{
+		// Select piece - specify its allowed moves
 		ChessBoardManager.Instance.SelectChessPiece(from.Item1, from.Item2);
+		// Move the selected piece if target position is allowed
 		ChessBoardManager.Instance.MoveChessPiece(to.Item1, to.Item2);
 	}
 
+	/**
+	* Validate speech text in terms of similar words
+	*/
 	private string ValidateWords(string input)
 	{
 		string output = input;
@@ -196,9 +223,13 @@ public class VoiceRecognition : MonoBehaviour
 				output = corrected + rest;
 			}
 		}
+
 		return output;
 	}
 
+	/**
+	* Validate speech text in terms of lisps
+	*/
 	private string ValidateMovement(string value, char[] letters, char[] numbers)
 	{
 		char first = value[0];
@@ -216,10 +247,7 @@ public class VoiceRecognition : MonoBehaviour
 				second = '8';
 		}
 
-
 		string output = Char.ToString(first) + Char.ToString(second);
-		Debug.Log("Validated: " + output);
-
 		return output;
 	}
 }

@@ -35,6 +35,9 @@ public class Timer : MonoBehaviour
 
     #endregion
 
+    /**
+	 * START method - runs when script is being enabled
+	 */
     private void Start()
 	{
         Instance = this;
@@ -42,6 +45,9 @@ public class Timer : MonoBehaviour
         Init();
     }
 
+    /**
+     * Method that initialize chess timers with selected values
+     */
     void Init()
 	{
         timerIsRunningWhite = true;
@@ -51,14 +57,13 @@ public class Timer : MonoBehaviour
         flag = 0;
     }
 
+    /**
+     * Method that set value of chess timers from possible options or exclude them
+     */
     void SetTimers()
 	{
         switch (TimerValue)
         {
-            case "1":// to delete - only for testing
-                timeRemainingBlack = 10;
-                timeRemainingWhite = 10;
-                break;
             case "10":
                 timeRemainingBlack = 10 * 60;
                 timeRemainingWhite = 10 * 60;
@@ -103,55 +108,61 @@ public class Timer : MonoBehaviour
         }
     }
 
+    /**
+	 * UPDATE method - runs on each frame of the game
+	 */
     void Update()
 	{
         DateTime now = DateTime.Now;
 
+        // White is moving
         if (ChessBoardManager.Instance.isWhiteTurn)
 		{
 			timerIsRunningBlack = false;
             timerIsRunningWhite = true;
-            if (timerIsRunningWhite)
+            if (timerIsRunningWhite) // timer for white is running
             {
-                if (timeRemainingWhite > 0)
+                if (timeRemainingWhite > 0) // if player has got time
                 {
-                    timeRemainingWhite -= Time.deltaTime;
-                    DisplayTime(timeRemainingWhite, timeTextWhite);
+                    timeRemainingWhite -= Time.deltaTime; // decrement time by 1 second
+                    DisplayTime(timeRemainingWhite, timeTextWhite); // Display time
                 }
-                else
+                else // end of time - white lost
                 {
-                    result = BlackName + " won by timeout!";
-                    ChessBoardManager.Instance.EndGamePopUp(result);
+                    result = BlackName + " won by timeout!"; // dark won
+                    ChessBoardManager.Instance.EndGamePopUp(result); // end game pop-up
                     timeRemainingWhite = 0;
                     timerIsRunningWhite = false;
                     if(flag == 0)
 					{
+                        //add new score to scoreboard table
                         ChessBoardManager.Instance.manager.AddScore(new Score("1", BlackName, WhiteName + " (timeout)", now.ToString("MM/dd/yyyy H:mm"), ChessBoardManager.Instance.numberOfMoves, ChessBoardManager.Instance.chessNotation));
                         flag = 1;
                     }
                 }
             }
         }
-        else
+        else // Dark is moving
 		{
             timerIsRunningBlack = true;
             timerIsRunningWhite = false;
             if (timerIsRunningBlack)
             {
-                if (timeRemainingBlack > 0)
+                if (timeRemainingBlack > 0) // if player has got time
                 {
-                    timeRemainingBlack -= Time.deltaTime;
-                    DisplayTime(timeRemainingBlack, timeTextBlack);
+                    timeRemainingBlack -= Time.deltaTime; // decrement time by 1 second
+                    DisplayTime(timeRemainingBlack, timeTextBlack); // Display time
                 }
                 else
                 {
-                    result = WhiteName + " won by timeout!";
-                    ChessBoardManager.Instance.EndGamePopUp(result);
+                    result = WhiteName + " won by timeout!"; // white won
+                    ChessBoardManager.Instance.EndGamePopUp(result); // end-game pop-up
                     timeRemainingBlack = 0;
                     timerIsRunningBlack = false;
                     
                     if(flag == 0)
 					{
+                        //add new score to scoreboard table
                         ChessBoardManager.Instance.manager.AddScore(new Score("1", WhiteName, BlackName + " (timeout)", now.ToString("MM/dd/yyyy H:mm"), ChessBoardManager.Instance.numberOfMoves, ChessBoardManager.Instance.chessNotation));
                         flag = 1;
 					}
@@ -160,6 +171,7 @@ public class Timer : MonoBehaviour
         }
     }
 
+    // DisplayTime - Display time on chess clock (text field) in proper format
     public void DisplayTime(float timeToDisplay, Text timeText)
     {
         timeToDisplay += 1;
@@ -170,10 +182,17 @@ public class Timer : MonoBehaviour
         timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 
+    /**
+     * Get White player name
+     */
     public string GetWhiteName()
 	{
         return WhiteName;
 	}
+
+    /**
+     * Get Dark player name
+     */
     public string GetBlackName()
 	{
         return BlackName;

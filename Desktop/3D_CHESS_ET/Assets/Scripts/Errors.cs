@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Class containing error array used for speech validation
+ */
 public class Errors : MonoBehaviour
 {
 	public string[] two_digits_errors_with_A_letter = { "ey", "ei", "is" };

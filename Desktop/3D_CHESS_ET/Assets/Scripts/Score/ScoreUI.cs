@@ -4,14 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/**
+ * Class for the UI of scoreboard
+ */
 public class ScoreUI : MonoBehaviour
 {
     public RowHelper row;
     public ScoreManager manager;
 
+	/**
+	 * START method - runs when script is being enabled
+	 */
 	void Start()
 	{
 		var scores = manager.GetScoresByData().ToArray();
+		// organize the scores data and assign it to proper cells of the table
 		for(int i = 0; i < scores.Length; i++)
 		{
 			var r = Instantiate(row, transform).GetComponent<RowHelper>();

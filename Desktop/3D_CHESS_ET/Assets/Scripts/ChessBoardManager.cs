@@ -4,6 +4,9 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
 
+/**
+ * Key method in a program used for selecting piece, assigning moves to it and actually moving it
+ */
 public class ChessBoardManager : MonoBehaviour
 {
 	#region fields
@@ -76,171 +79,184 @@ public class ChessBoardManager : MonoBehaviour
 	#endregion
 	#region methods
 
-	/*
-	 *  __START METHOD__
+	/**
+	 * START method - runs when script is being enabled
 	 */
 	private void Start()
 	{
 		Instance = this;
-		SpawnAllChessPieces();
-		DrawGameBoard();
-		CheckReadingMoves();
-		CheckCameraRotation();
+		SpawnAllChessPieces(); // spawn pieces on the board
+		DrawGameBoard(); // draw the game board
+		CheckReadingMoves(); // read option and adjust reading moves system
+		CheckCameraRotation(); // read option and adjust camera rotation
+
+		Time.timeScale = 1; // enable time scale
+
 	}
 
-	/*
-	 *  __UPDATE METHOD__
+	/**
+	 * UPDATE method - runs on each frame of the game
 	 */
 	private void Update()
 	{
-		SelectedField();
+		SelectedField(); // select place on the game screen
 
-		if(Input.GetMouseButtonDown(0))
+		if(Input.GetMouseButtonDown(0)) // detect left click
 		{
 
-			Debug.Log(locationX);
-			Debug.Log(locationY);
-			MapPositionToChessPosition(locationX,locationY);
+			MapPositionToChessPosition(locationX,locationY); // map clicked place into logic value
 		
-			if(locationX >= 0 && locationY >= 0)
+			if(locationX >= 0 && locationY >= 0) 
 			{
 				if(selectedPiece == null)
 				{
-					SelectChessPiece(locationX, locationY);
+					SelectChessPiece(locationX, locationY); // prepare possible moves for a chess piece
 				}
 				else
 				{
-					MoveChessPiece(locationX, locationY);
+					MoveChessPiece(locationX, locationY); // move selected chess piece
 				}
 			}
 		}
 	}
 
+	/**
+	 * Method checking status of reading moves system
+	 */
 	private void CheckReadingMoves()
 	{
-		if(GameOptionsManager.VoiceReadMovesEnabled == false)
+		if(GameOptionsManager.VoiceReadMovesEnabled == false) // if system not enabled
 		{
-			MoveReaderCustom.GetComponent<AudioSource>().mute = true;
-			speechReader.image.color = Color.red;
+			MoveReaderCustom.GetComponent<AudioSource>().mute = true; // mute audio
+			speechReader.image.color = Color.red; // set control color to red
 		}
 		else
 		{
-			speechReader.image.color = Color.green;
+			speechReader.image.color = Color.green; // set control color to green
 		}
 
 
 	}
 
+	/**
+	 * Method checking status of camera rotation system
+	 */
 	private void CheckCameraRotation()
-	{
-		if(GameOptionsManager.CameraRotationEnabled == false)
+	{ 
+		if(GameOptionsManager.CameraRotationEnabled == false) // if option not checked for the game
 		{
-			cameraRotation.SetActive(false);
+			cameraRotation.SetActive(false); // disable game object
 		}
 		else
 		{
-			cameraRotation.SetActive(true);
+			cameraRotation.SetActive(true); // enable game object
 		}
 	}
 	
+	/**
+	 * Select piece and define its possible moves
+	 */
 	public void SelectChessPiece(int x, int y)
 	{
-		if(Pieces[x,y] == null)
+		if(Pieces[x,y] == null) // no piece selected
 		{
 			return;
 		}
-		if(Pieces[x,y].isWhite != isWhiteTurn)
+		if(Pieces[x,y].isWhite != isWhiteTurn) // selected piece is not from the proper color, e.g. black pawn when white color is moving
 		{
 			return;
 		}
-		if(isCheck && Pieces[x,y].isPossibleToMoveInCheck == false)
+		if(isCheck && Pieces[x,y].isPossibleToMoveInCheck == false) // check state on the board and selected piece cannot move in such state
 		{
 			return;
 		}
-		if(isCheck && Pieces[x, y].isPossibleToMoveInCheck == true)
+		if(isCheck && Pieces[x, y].isPossibleToMoveInCheck == true) // check state and selected piece can move in such state
 		{
 			Tuple<int, int> key = new Tuple<int, int>(x, y);
 			allPossibleMovesForCheck.TryGetValue(key, out allowedForCheck);
-			allowedMoves = allowedForCheck;
-			if(Pieces[x,y].GetType() == typeof(King))
+			allowedMoves = allowedForCheck; // read allowed moves for a selected piece from dictionary of possible moves for a piece during a check state 
+			if(Pieces[x,y].GetType() == typeof(King)) // filter allowed moves when selected piece is a king
 			{
 				var kingObject = gameObject.GetComponent<King>();
-				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
+				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y); // filter by forbidden moves 
 				allowedMoves = filtered;
 			}
-			else
+			else // filter for any other type of piece
 			{
 				var p = Pieces[x, y];
-				FilterByPin(allowedMoves, p, x, y);
+				FilterByPin(allowedMoves, p, x, y); // filter by pin
 			}
-			allPossibleMovesForCheck.Clear();
+			allPossibleMovesForCheck.Clear(); // clear list of possible moves during check
 		}
 		else
 		{
 			Debug.Log("selected:" + Pieces[x, y].name);
-			if (Pieces[x, y].GetType() == typeof(King))
+			if (Pieces[x, y].GetType() == typeof(King)) // if selected piece is a king
 			{
 				allowedMoves = Pieces[x, y].IsLegalMove();
 				var kingObject = gameObject.GetComponent<King>();
-				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y);
-				allowedMoves = filtered;
+				var filtered = kingObject.FilterForbiddenMoves(allowedMoves, x, y); // filter possible moves by forbidden moves
+				allowedMoves = filtered; 
 			}
-			else
+			else // any other piece is selected
 			{
 				allowedMoves = Pieces[x, y].IsLegalMove();
 				var p = Pieces[x, y];
-				FilterByPin(allowedMoves, p, x, y);
+				FilterByPin(allowedMoves, p, x, y); // filter possible moves by pin
 
 			}
 		}
 
-		selectedPiece = Pieces[x, y];
-		BoardAddons.Instance.HighlightAllowedMoves(allowedMoves);
+		selectedPiece = Pieces[x, y]; // assign selected piece from Pieces array
+		BoardAddons.Instance.HighlightAllowedMoves(allowedMoves); // highlight allowed moves for a selected piece
 
-		MoveInSpeech = selectedPiece.GetType().ToString();
-		whereFrom = MapPositionToChessPosition(x, y);
+		MoveInSpeech = selectedPiece.GetType().ToString(); // assign name of selected piece to be read by reading move system
+		whereFrom = MapPositionToChessPosition(x, y); 
 	}
 
+	/**
+	 * Method handling move of a chess piece
+	 */
 	public void MoveChessPiece(int x, int y)
 	{
 
-		if (allowedMoves[x, y] && selectedPiece != null)
+		if (allowedMoves[x, y] && selectedPiece != null) // if target field is allowed move
 		{
-			chessNotation += BoardAddons.Instance.GetNotationForAPiece(MoveInSpeech);
-			chessNotation += whereFrom[0].ToString().ToLower();
+			chessNotation += BoardAddons.Instance.GetNotationForAPiece(MoveInSpeech); // get PGN notation for a piece
+			chessNotation += whereFrom[0].ToString().ToLower(); // get start position for PGN notation
 
-			ChessPiece piece = Pieces[x, y];
-			if (piece != null && piece.isWhite != isWhiteTurn)
+			ChessPiece piece = Pieces[x, y]; // get piece on a target position
+			if (piece != null && piece.isWhite != isWhiteTurn) // capture check
 			{
-				chessPiecesActive.Remove(piece.gameObject);
-				Destroy(piece.gameObject);
-				chessNotation += "x";
+				chessPiecesActive.Remove(piece.gameObject); // remove from list of active chess pieces prefabs
+				Destroy(piece.gameObject); // destroy game object
+				chessNotation += "x"; // add to PGN notation
 			}
 
 			//en passant
 			if (piece == null)
 			{
-				if (selectedPiece.GetType() == typeof(Pawn))
+				if (selectedPiece.GetType() == typeof(Pawn)) // if moving piece is a pawn
 				{
 					if (isWhiteTurn)
 					{
 						if (Math.Abs(x - selectedPiece.PositionX) == 1 && Math.Abs(y - selectedPiece.PositionY) == 1)
 						{
 							piece = Pieces[x, y - 1];
-							chessPiecesActive.Remove(piece.gameObject);
+							chessPiecesActive.Remove(piece.gameObject); // remove from list of active chess pieces prefabs
 							Debug.Log(piece.gameObject.name);
-							Destroy(piece.gameObject);
+							Destroy(piece.gameObject); //capture a pawn
 						}
 
 					}
-					else
+					else 
 					{
 						if (Math.Abs(x - selectedPiece.PositionX) == 1 && Math.Abs(y - selectedPiece.PositionY) == 1)
 						{
 							piece = Pieces[x, y + 1];
-							chessPiecesActive.Remove(piece.gameObject);
+							chessPiecesActive.Remove(piece.gameObject); // remove from list of active chess pieces prefabs
 							Debug.Log(piece.gameObject.name);
-							Destroy(piece.gameObject);
+							Destroy(piece.gameObject); //capture a pawn
 						}
 					}
 				}
@@ -260,16 +276,16 @@ public class ChessBoardManager : MonoBehaviour
 			}
 
 			//core
-			int KingMove = selectedPiece.PositionX - x;
-			Pieces[selectedPiece.PositionX, selectedPiece.PositionY] = null;
-			selectedPiece.transform.position = GetTileCenter(x, y);
-			selectedPiece.SetPosition(x, y);
-			selectedPiece.SetInitialMoveDone();
-			Pieces[x, y] = selectedPiece;
+			int KingMove = selectedPiece.PositionX - x; // prepare variable detecting if castle is performed
+			Pieces[selectedPiece.PositionX, selectedPiece.PositionY] = null; //remove old position of a piece
+			selectedPiece.transform.position = GetTileCenter(x, y); // add new position to the piece
+			selectedPiece.SetPosition(x, y); // assign new position
+			selectedPiece.SetInitialMoveDone(); // set initial move done for a piece
+			Pieces[x, y] = selectedPiece; // assign new position of a piece in Pieces array
 
 
 			int?[,] piecesTemp = new int?[8, 8];
-			for (int k = 0; k < piecesTemp.GetLength(0); k++)
+			for (int k = 0; k < piecesTemp.GetLength(0); k++) // copy content of Pieces array into temporary array 
 			{
 				for (int m = 0; m < piecesTemp.GetLength(1); m++)
 				{				
@@ -277,107 +293,108 @@ public class ChessBoardManager : MonoBehaviour
 					piecesTemp[k, m] = temp;
 				}
 			}
-			positionsList.Add(piecesTemp);
-			bool threeFold = CheckThreeFoldRepetition(positionsList);
+			positionsList.Add(piecesTemp); // add temporary array to list arrays 
+			bool threeFold = CheckThreeFoldRepetition(positionsList); // check threefold repetition basing on list of Pieces arrays
 
 			string targetPos = MapPositionToChessPosition(x, y);
-			chessNotation += targetPos.ToString().ToLower();
+			chessNotation += targetPos.ToString().ToLower(); // add entry to PGN notation
 
-			numberOfMoves++;
+			numberOfMoves++; // increment number of moves
 
 			//check draw
-			if(OnlyKingsOnTheBoard(chessPiecesActive) || SideCannotMoveAnywhere() || threeFold)
+			if(OnlyKingsOnTheBoard(chessPiecesActive) || SideCannotMoveAnywhere() || threeFold) // check draw conditions
 			{
-				StartCoroutine(MoveReaderCustom.ReadDraw(MoveInSpeech, MapPositionToChessPosition(x, y),"draw"));
-				EndGamePopUp("Game draw");
-				EndGameByDraw();
-				chessNotation = "";
+				StartCoroutine(MoveReaderCustom.ReadDraw(MoveInSpeech, MapPositionToChessPosition(x, y),"draw")); // start coroutine reading draw move
+				EndGamePopUp("Game draw"); // open end game pop-up
+				EndGameByDraw(); // end game
+				chessNotation = ""; // add entry to chess notation
 
 				isDraw = true;
 				var kingObject = gameObject.GetComponent<King>();
 				var kingA = kingObject.GetKingPosition();
 				var kingB = kingObject.GetOppositeKingPosition();
-				BoardAddons.Instance.ShowDraw(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2);
+				BoardAddons.Instance.ShowDraw(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2); // add draw markings to kings
 
 			}
 
-			isCheck = false;
-			if(!isDraw)
+			isCheck = false; // reset check
+			if(!isCheck)
 				BoardAddons.Instance.HideCheck(marking);
 
 			//castle king & queen side
 			if (KingMove == -2 && selectedPiece.GetType() == typeof(King))
 			{
-				chessNotation = chessNotation.Remove(chessNotation.Length - 4);
-				chessNotation += "O-O";
+				chessNotation = chessNotation.Remove(chessNotation.Length - 4); // adjustment
+				chessNotation += "O-O"; // add entry to PGN notation
 
-				chessPiecesActive.Remove(Pieces[x + 1, y].gameObject);
+				chessPiecesActive.Remove(Pieces[x + 1, y].gameObject); // removing rook
 				var t = Pieces[x + 1, y].Id;
-				Destroy(Pieces[x + 1, y].gameObject);
+				Destroy(Pieces[x + 1, y].gameObject); // destroying rook
 				if (isWhiteTurn)
 				{
-					SpawnChessPiece(3, x - 1, y, "White Rook",t);
+					SpawnChessPiece(3, x - 1, y, "White Rook",t); // spawning it on the left of the king
 				}
 				else
 				{
-					SpawnChessPiece(9, x - 1, y, "Dark Rook",t);
+					SpawnChessPiece(9, x - 1, y, "Dark Rook",t); // spawning it on the left of the king
 				}
 
 				isCastle = true;
 			}
 			else if (KingMove == 2 && selectedPiece.GetType() == typeof(King))
 			{
-				chessNotation = chessNotation.Remove(chessNotation.Length - 4);
-				chessNotation += "O-O-O";
+				chessNotation = chessNotation.Remove(chessNotation.Length - 4); // adjustment
+				chessNotation += "O-O-O"; // add entry to PGN notation
 
-				chessPiecesActive.Remove(Pieces[x - 2, y].gameObject);
+				chessPiecesActive.Remove(Pieces[x - 2, y].gameObject); // removing rook
 				var t = Pieces[x - 2, y].Id;
-				Destroy(Pieces[x - 2, y].gameObject);
+				Destroy(Pieces[x - 2, y].gameObject); // destroying rook
 				if (isWhiteTurn)
 				{
-					SpawnChessPiece(3, x + 1, y, "White Rook",t);
+					SpawnChessPiece(3, x + 1, y, "White Rook",t); // spawning it on the right of the king
 				}
 				else
 				{
-					SpawnChessPiece(9, x + 1, y, "Dark Rook",t);
+					SpawnChessPiece(9, x + 1, y, "Dark Rook",t); // spawning it on the right of the king
 				}
 
 				isCastle = true;
 			}
 
-			if ((y == 7 || y == 0) && selectedPiece.GetType() == typeof(Pawn))
+			if ((y == 7 || y == 0) && selectedPiece.GetType() == typeof(Pawn)) // promotion check
 			{
-				HandlePromotion(x, y);
+				HandlePromotion(x, y); // perform pawn promotion
 			}
 
 			//check scan
-			foreach (ChessPiece afterMove in Pieces)
+			foreach (ChessPiece afterMove in Pieces) // for each piece of moving color
 				{
-					doNotPerformCheckScanForEnPassant = true;
+					doNotPerformCheckScanForEnPassant = true; // adjustment
 					if (afterMove != null && afterMove.isWhite == isWhiteTurn)
 					{
-						allowedMovesAfterMove = afterMove.IsLegalMove();
+						allowedMovesAfterMove = afterMove.IsLegalMove(); // allowed moves for a given piece
 						for (int row = 0; row < allowedMovesAfterMove.GetLength(0); row++)
 						{
 							for (int col = 0; col < allowedMovesAfterMove.GetLength(1); col++)
 							{
 								if (allowedMovesAfterMove[row, col] == true)
 								{
-									var p = Pieces[row, col];
-									if (p != null && p.GetType() == typeof(King) && p.isWhite != isWhiteTurn)
+									var p = Pieces[row, col]; // piece on allowed move
+									if (p != null && p.GetType() == typeof(King) && p.isWhite != isWhiteTurn) // if piece is attacked and this piece is a king
 									{
 										Debug.Log("CHECK STATE");
 										checkingPiece = afterMove;
 										isCheck = true;
-										chessNotation += "+";
+										chessNotation += "+"; // add entry to PGN notation
 
-										BoardAddons.Instance.ShowCheck(marking, row, col);
+										BoardAddons.Instance.ShowCheck(marking, row, col); // show marking for a attacked king
 									}
 								}
 							}
 						}
 					}
 				}
+
 			doNotPerformCheckScanForEnPassant = false;
 
 			//turn change
@@ -517,26 +534,27 @@ public class ChessBoardManager : MonoBehaviour
 				if(!kingObject.SimulateKingMove())
 				{
 
-					chessNotation = chessNotation.Remove(chessNotation.Length - 1);
-					chessNotation += "#";
+					chessNotation = chessNotation.Remove(chessNotation.Length - 1); // adjustment
+					chessNotation += "#"; // add PGN notation entry
 					var kingA = kingObject.GetKingPosition();
 					var kingB = kingObject.GetOppositeKingPosition();
-					EndGamePopUp(CheckWinner(!isWhiteTurn));
+					EndGamePopUp(CheckWinner(!isWhiteTurn)); // open end game pop-up
 					isMate = true;
-					if (isWhiteTurn)
+					if (isWhiteTurn) // who won?
 					{
 						mate = "mateWhite";
-						BoardAddons.Instance.ShowMate(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2);
+						BoardAddons.Instance.ShowMate(marking, kingA.Item1, kingA.Item2, additionalMarking, kingB.Item1, kingB.Item2); // show marking for checkmate
 					}
 					else
 					{
 						mate = "mateBlack";
-						BoardAddons.Instance.ShowMate(marking, kingB.Item1, kingB.Item2, additionalMarking, kingA.Item1, kingA.Item2);
+						BoardAddons.Instance.ShowMate(marking, kingB.Item1, kingB.Item2, additionalMarking, kingA.Item1, kingA.Item2); // show marking for checkmate
 					}
 				}
 			}
 		}
 
+		//Start coroutine reading performed move depending on type of the move
 		if (isCheck)
 		{
 			if (isMate)
@@ -559,32 +577,38 @@ public class ChessBoardManager : MonoBehaviour
 				StartCoroutine(MoveReaderCustom.ReadMove(MoveInSpeech, MapPositionToChessPosition(x, y)));
 		}
 
-		chessNotation += "\n";
+		chessNotation += "\n"; // new line in PGN notation
 
 	}
 
+	/*
+	 * Method handling promotion of a pawn
+	 */
 	private void HandlePromotion(int xPos, int yPos)
 	{
 		XLocation = xPos;
 		YLocation = yPos;
 		chessPiecesActive.Remove(Pieces[xPos, yPos].gameObject);
 		var t = Pieces[xPos, yPos].Id;
-		Destroy(Pieces[xPos, yPos].gameObject);
+		Destroy(Pieces[xPos, yPos].gameObject); // delete pawn
 		if (isWhiteTurn)
 		{
-			SpawnChessPiece(4, xPos, yPos, "WhiteQueen",t);
+			SpawnChessPiece(4, xPos, yPos, "WhiteQueen",t); // spawn queen
 		}
 		else
 		{
-			SpawnChessPiece(10, xPos, yPos, "DarkQueen",t);
+			SpawnChessPiece(10, xPos, yPos, "DarkQueen",t); // spawn queen
 		}
 	}
 
+	/**
+	 * Method handling time increment for timers
+	 */
 	private void CheckIncrement(bool isWhiteMoving)
 	{
 		if(Timer.Instance.incrementValue > 0)
 		{
-			if (isWhiteMoving)//zamiast 1 dodac wartosc modyfikowalna
+			if (isWhiteMoving)
 			{
 				Timer.Instance.timeRemainingWhite += Timer.Instance.incrementValue;
 				Timer.Instance.DisplayTime(Timer.Instance.timeRemainingWhite, Timer.Instance.timeTextWhite);
@@ -599,56 +623,68 @@ public class ChessBoardManager : MonoBehaviour
 
 	}
 
+	/**
+	 * Method opening end game pop-up
+	 */
 	public void EndGamePopUp(string result)
 	{
 		endGameText.text = result;
-		popUpWindowForEndGame.SetActive(true);
-		Time.timeScale = 0;
+		popUpWindowForEndGame.SetActive(true); // show pop-up
+		Time.timeScale = 0; // stop timers
 	}
 
+	/**
+	 * Method purposed for adding new record to scoreboard table for a game draw
+	 */
 	public void EndGameByDraw()
 	{
-		DateTime now = DateTime.Now;
+		DateTime now = DateTime.Now; // current date
 		string whitePlayer = GameOptionsManager.playerWhiteName;
 		string darkPlayer = GameOptionsManager.playerBlackName;
-		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName))
+		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName)) // check player name
 			whitePlayer = "White color";
-		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName))
+		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName)) // check player name
 			darkPlayer = "Dark color";
-		manager.AddScore(new Score("1", whitePlayer +" - "+ darkPlayer, "1/2 - 1/2 (draw)", now.ToString("MM/dd/yyyy H:mm"),numberOfMoves,chessNotation));
-		numberOfMoves = 0;
+		manager.AddScore(new Score("1", whitePlayer +" - "+ darkPlayer, "1/2 - 1/2 (draw)", now.ToString("MM/dd/yyyy H:mm"),numberOfMoves,chessNotation)); // add record to scoreboard
+		numberOfMoves = 0; // reset number of moves
 
 	}
 
+	/**
+	 * Method purposed for adding new record to scoreboard table for a checkmate
+	 */
 	public string CheckWinner(bool turn)
 	{
 		string result = "Checkmate. ";
-		DateTime now = DateTime.Now;
+		DateTime now = DateTime.Now; // current date
 
 		string whitePlayer = GameOptionsManager.playerWhiteName;
 		string darkPlayer = GameOptionsManager.playerBlackName;
-		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName))
+		if (String.IsNullOrEmpty(GameOptionsManager.playerWhiteName)) // check player name
 			whitePlayer = "White color";
-		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName))
+		if (String.IsNullOrEmpty(GameOptionsManager.playerBlackName)) // check player name 
 			darkPlayer = "Dark color";
 
 		if (turn)
 		{				
 			result += whitePlayer + " won!";
-			manager.AddScore(new Score("1", whitePlayer, darkPlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves,chessNotation));
-			numberOfMoves = 0;
+			manager.AddScore(new Score("1", whitePlayer, darkPlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves,chessNotation)); // add record to scoreboard
+			numberOfMoves = 0; // reset number of moves
 
 		}
 		else
 		{
 			result += darkPlayer + " won!";
-			manager.AddScore(new Score("1", GameOptionsManager.playerBlackName, whitePlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves, chessNotation));
-			numberOfMoves = 0;
+			manager.AddScore(new Score("1", darkPlayer, whitePlayer, now.ToString("MM/dd/yyyy H:mm"), numberOfMoves, chessNotation)); // add record to scoreboard
+			numberOfMoves = 0; // reset number of moves
 
 		}
 		return result;
 	}
 
+	/**
+	 * Method filtering moves by pin
+	 */
 	private bool [,] FilterByPin(bool [,] allowed, ChessPiece piece, int posX, int posY)
 	{
 		bool checkFlag;
@@ -683,13 +719,16 @@ public class ChessBoardManager : MonoBehaviour
 			return allowed;
 	}
 
+	/**
+	 * Method determining a check
+	 */
 	private bool CheckScan()
 	{
 		//check scan
-		foreach (ChessPiece afterMove in Pieces)
+		foreach (ChessPiece afterMove in Pieces) // for each piece
 		{
 			doNotPerformCheckScanForEnPassant = true;
-			if (afterMove != null && afterMove.isWhite != isWhiteTurn)
+			if (afterMove != null && afterMove.isWhite != isWhiteTurn) // for each piece of opposite color
 			{
 				allowedMovesAfterMove = afterMove.IsLegalMove();
 				for (int row = 0; row < allowedMovesAfterMove.GetLength(0); row++)
@@ -699,9 +738,9 @@ public class ChessBoardManager : MonoBehaviour
 						if (allowedMovesAfterMove[row, col] == true)
 						{
 							var p = Pieces[row, col];
-							if (p != null && p.GetType() == typeof(King) && p.isWhite == isWhiteTurn)
+							if (p != null && p.GetType() == typeof(King) && p.isWhite == isWhiteTurn) // if possible move of a piece is a position of a king
 							{
-								return true;
+								return true; // there is a check
 							}
 						}
 					}
@@ -712,6 +751,9 @@ public class ChessBoardManager : MonoBehaviour
 		return false;
 	}
 
+	/**
+	 * Method checking if there are only 2 pieces left on the chessboard - kings
+	 */
 	private bool OnlyKingsOnTheBoard(List<GameObject> figures)
 	{
 		if (figures.Count == 2) // kings cannot be captured
@@ -721,18 +763,21 @@ public class ChessBoardManager : MonoBehaviour
 		return false;
 	}
 	
+	/** 
+	 * Method determining if a side has any legal move in position
+	 */
 	private bool SideCannotMoveAnywhere()
 	{
-		foreach(ChessPiece piece in Pieces)
+		foreach(ChessPiece piece in Pieces) // for each piece
 		{
-			if(piece != null && piece.isWhite != isWhiteTurn)
+			if(piece != null && piece.isWhite != isWhiteTurn) // for each piece of opposite color
 			{
 				var temp = piece.IsLegalMove();
 				if(piece.GetType() == typeof(King))
 				{
 					var kingObject = gameObject.GetComponent<King>();
 					var kingPos = kingObject.GetOppositeKingPosition();
-					var filtered = kingObject.FilterMovesForDraw(temp, kingPos.Item1, kingPos.Item2);
+					var filtered = kingObject.FilterMovesForDraw(temp, kingPos.Item1, kingPos.Item2); // define possible moves with all limitations
 					temp = filtered;
 				}
 
@@ -740,7 +785,7 @@ public class ChessBoardManager : MonoBehaviour
 				{
 					for(int j = 0; j<8; j++)
 					{
-						if (temp[i, j] == true)
+						if (temp[i, j] == true) // if any move possible
 							return false;
 					}
 				}
@@ -749,8 +794,12 @@ public class ChessBoardManager : MonoBehaviour
 		return true;
 	}
 
+	/**
+	 * Method checking threefold repetition
+	 */
 	private bool CheckThreeFoldRepetition(List<int?[,]> positionList)
 	{
+		//Method enumerates through elements of the list, if three the same elements (arrays, meaning all its elements are the same) exists there, the method return true
 		for (int i = 0; i < positionList.Count(); i++)
 		{
 			var curr = positionList.ElementAt(i);
@@ -768,9 +817,6 @@ public class ChessBoardManager : MonoBehaviour
 
 					if (equal == true)
 					{
-						Debug.Log(contr);
-						Debug.Log(curr);
-						Debug.Log("Counter + 1  " + counter);
 						counter++;
 					}
 					if (counter == 2)
@@ -784,9 +830,9 @@ public class ChessBoardManager : MonoBehaviour
 		return false;
 	}
 
-
-	//
-
+	/**
+	 * Method mapping logical position to chess position, e.g 00 -> A1
+	 */
 	private string MapPositionToChessPosition(int x, int y)
 	{
 		var o = PreparePositionDictionary();
@@ -799,6 +845,9 @@ public class ChessBoardManager : MonoBehaviour
 		return val;
 	}
 
+	/**
+	 * Method creating mapping dictionary
+	 */
 	public Dictionary<string, string> PreparePositionDictionary()
 	{
 		var dictionary = new Dictionary<string, string>();
@@ -860,6 +909,9 @@ public class ChessBoardManager : MonoBehaviour
 		return dictionary;
 	}
 
+	/**
+	 * Method used for assigning selected field on a screen in relation to place on the screen
+	 */
 	private void SelectedField()
 	{
 		if (!Camera.main)
@@ -880,6 +932,8 @@ public class ChessBoardManager : MonoBehaviour
 	//Helper function - used in designing
 	private void DrawGameBoard()
 	{
+		//Method creates a 8x8 grid used for developing figures moves
+
 		//fields
 		Vector3 width = Vector3.right * 8; //8 - number of tiles horizontally on the board
 		Vector3 height = Vector3.forward * 8; // 8 - number of tiles vertically on the board
@@ -907,7 +961,7 @@ public class ChessBoardManager : MonoBehaviour
 	}
 
 	/*
-	 * Spawn all pieces on the board
+	 * Method spawning all pieces on the chessboard
 	 */
 	private void SpawnAllChessPieces()
 	{

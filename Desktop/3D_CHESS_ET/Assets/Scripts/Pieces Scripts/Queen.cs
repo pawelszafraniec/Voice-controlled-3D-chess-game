@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Class handling queen moves
+ */
 public class Queen : ChessPiece
 {
 	public Queen() : base()
@@ -14,6 +17,9 @@ public class Queen : ChessPiece
 
 	}
 
+	/**
+	 * Clone method for Queen game object
+	 */
 	public override ChessPiece Clone()
 	{
 		var piece = gameObject.AddComponent<Queen>();
@@ -21,6 +27,9 @@ public class Queen : ChessPiece
 		return piece;
 	}
 
+	/**
+	* Override method determining allowed moves in given position for rook. Queen move is a composition of rook and bishop moves
+	*/
 	public override bool[,] IsLegalMove()
 	{
 		bool[,] move = new bool[8, 8];
@@ -29,6 +38,7 @@ public class Queen : ChessPiece
 		int j;
 
 		//Queen movement = rook movement + bishop movement
+
 		#region rook
 		//right
 		i = PositionX;
@@ -245,10 +255,12 @@ public class Queen : ChessPiece
 
 		#endregion
 
-
-
 		return move;
 	}
+
+	/**
+	 * Override method determining what pieces are defended by a queen in given position. Composition of IsPieceDefended() for rook and bishop
+	 */
 	public override bool[,] IsPieceDefended()
 	{
 		bool[,] defend = new bool[8, 8];

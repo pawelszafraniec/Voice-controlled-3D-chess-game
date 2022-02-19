@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ * Data class for Scoreboard
+ */
 [Serializable]
 public class Data
 {

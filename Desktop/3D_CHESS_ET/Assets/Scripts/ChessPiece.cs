@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//base class for a piece
+/**
+ * Base class for chess pieces
+ */
 public abstract class ChessPiece : MonoBehaviour
 {
 	#region fields
 
 	public int Id { get; set; }
-
 	public int PositionX { get; set; }
 	public int PositionY { get; set; }
 
@@ -16,13 +17,14 @@ public abstract class ChessPiece : MonoBehaviour
 	public bool isEnPassantEnabledRight;
 	public bool isEnPassantEnabledLeft;
 	public bool isInitialMoveDone;
-
 	public bool isPossibleToMoveInCheck;
 
 	public bool[,] kingCapture;
 
 	#endregion
-
+	/**
+	 * Method setting values to ChessPiece game object
+	 */
 	protected void SetValues(ChessPiece piece)
 	{
 		PositionX = piece.PositionX;
@@ -59,18 +61,27 @@ public abstract class ChessPiece : MonoBehaviour
 
 	public abstract ChessPiece Clone();
 
+	/**
+	 * Set ChessPiece position method
+	 */
 	public void SetPosition(int x, int y)
 	{
 		PositionX = x;
 		PositionY = y;
 	}
 
+	/**
+	 * Method setting initial move of a piece done
+	 */
 	public void SetInitialMoveDone()
 	{
 		if(!isInitialMoveDone)
 			isInitialMoveDone = true;
 	}
 
+	/**
+	 * Method setting a ChessPiece able to move during check state
+	 */
 	public void SetPossibleToMoveInCheck()
 	{
 		isPossibleToMoveInCheck = true;
