@@ -29,8 +29,6 @@ memory.
 - Fully covered chess logic
 - Extensive scoreboard
 
-## Game screens
-
 
 
 
